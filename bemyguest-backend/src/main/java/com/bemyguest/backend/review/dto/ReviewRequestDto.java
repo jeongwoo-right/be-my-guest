@@ -7,4 +7,4 @@ public class ReviewRequestDto {
 	private long userId;
     private int rating;
     private String content;
-}
+} 
