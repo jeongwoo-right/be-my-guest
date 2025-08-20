@@ -22,7 +22,7 @@ public class ReviewController {
      * 리뷰 작성 API
      * [변경] Request Body에서 user_id를 함께 받음
      */
-    @PostMapping("/{reservation_id}")
+    @PostMapping("/create/{reservation_id}")
     public ResponseEntity<ReviewResponseDto> createReview(
             @PathVariable("reservation_id") long reservationId,
             @RequestBody ReviewRequestDto requestDto) { // @AuthenticationPrincipal 제거
@@ -36,7 +36,7 @@ public class ReviewController {
      * 리뷰 수정 API
      * [변경] Request Body에서 user_id를 함께 받음
      */
-    @PutMapping("/{review_id}")
+    @PutMapping("/edit/{review_id}")
     public ResponseEntity<String> updateReview(
             @PathVariable("review_id") long reviewId,
             @RequestBody ReviewRequestDto requestDto) { // @AuthenticationPrincipal 제거
@@ -50,7 +50,7 @@ public class ReviewController {
      * 리뷰 삭제 API
      * [변경] Query Parameter로 user_id를 받음
      */
-    @DeleteMapping("/{review_id}")
+    @DeleteMapping("/edit/{review_id}")
     public ResponseEntity<String> deleteReview(
             @PathVariable("review_id") long reviewId,
             @RequestParam("user_id") long userId) { // @RequestParam으로 userId 받기
@@ -62,11 +62,19 @@ public class ReviewController {
     /**
      * 숙소별 리뷰 목록 조회 API (변경 없음)
      */
-    @GetMapping("/{guesthouse_id}")
+    @GetMapping("/search/guesthouse/{guesthouse_id}")
     public ResponseEntity<List<ReviewResponseDto>> getReviewsByGuesthouse(
             @PathVariable("guesthouse_id") long guesthouseId) {
 
         List<ReviewResponseDto> reviews = reviewService.getReviewsByGuesthouse(guesthouseId);
+        return ResponseEntity.ok(reviews);
+    }
+    
+    @GetMapping("/search/user/{user_id}")
+    public ResponseEntity<List<ReviewResponseDto>> getReviewsByUser(
+            @PathVariable("user_id") long userId) {
+            
+        List<ReviewResponseDto> reviews = reviewService.getReviewsByUser(userId);
         return ResponseEntity.ok(reviews);
     }
 }
