@@ -12,4 +12,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     
     // 예약 ID로 리뷰가 이미 존재하는지 확인하는 메서드 (중복 작성 방지) 
     boolean existsByReservationId(long reservationId);
+    
+    List<Review> findAllByUserIdOrderByCreatedAtDesc(long userId);
 }

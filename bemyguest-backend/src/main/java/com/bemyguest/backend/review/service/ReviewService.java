@@ -74,6 +74,19 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getReviewsByUser(long userId) {
+        // 먼저 사용자가 존재하는지 확인하여 예외 처리
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("ID: " + userId + " 사용자를 찾을 수 없습니다.");
+        }
+        
+        return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(ReviewResponseDto::new)
+                .collect(Collectors.toList());
+    }
+    
     // (공통 메서드) 파라미터 변경
     private Review findReviewAndCheckAuthority(long reviewId, long userId) {
         Review review = reviewRepository.findById(reviewId)
