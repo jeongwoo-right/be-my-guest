@@ -50,7 +50,7 @@ public class Review {
     @LastModifiedDate
     private LocalDateTime updatedAt;
     
-    // 생성자, 수정 메서드 등 필요에 따라 추가
+
     public Review(Reservation reservation, User user, Guesthouse guesthouse, int rating, String content) {
         this.reservation = reservation;
         this.user = user;
