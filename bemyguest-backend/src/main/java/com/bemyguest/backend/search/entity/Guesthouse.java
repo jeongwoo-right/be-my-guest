@@ -29,6 +29,13 @@ public class Guesthouse {
 
     @Lob
     private String description;
+    
+    // ⭐ 평점 컬럼 추가 (리뷰팀이 집계해서 채워줄 값)
+    @Column(name = "rating_avg", precision = 3, scale = 2) // 예: 4.37
+    private BigDecimal ratingAvg;
+    
+    @Column(name = "rating_count")
+    private Integer ratingCount;
 
     protected Guesthouse() {} // JPA 기본 생성자
 
@@ -49,4 +56,6 @@ public class Guesthouse {
     public int getCapacity() { return capacity; }
     public BigDecimal getPrice() { return price; }
     public String getDescription() { return description; }
+    public BigDecimal getRatingAvg() { return ratingAvg; }
+    public Integer getRatingCount() { return ratingCount; }
 }

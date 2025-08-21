@@ -4,10 +4,12 @@ import com.bemyguest.backend.search.dto.GuesthouseSummary;
 import com.bemyguest.backend.search.dto.SearchRequest;
 import com.bemyguest.backend.search.entity.Guesthouse;
 import com.bemyguest.backend.search.repository.GuesthouseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class SearchService {
@@ -18,39 +20,56 @@ public class SearchService {
         this.guesthouseRepository = guesthouseRepository;
     }
 
-    // (기존) 엔티티 반환 -> (변경) DTO 반환
     @Transactional(readOnly = true)
-    public List<GuesthouseSummary> searchBasic(SearchRequest req) {
+    public Page<GuesthouseSummary> searchAvailable(SearchRequest req) {
         validateDatesAndGuests(req);
-        List<Guesthouse> entities =
-                guesthouseRepository.findByBasicFilters(req.getRegion(), req.getGuests());
-        return entities.stream().map(this::toSummary).toList();
-    }
 
-    // (기존) 엔티티 반환 -> (변경) DTO 반환
-    @Transactional(readOnly = true)
-    public List<GuesthouseSummary> searchAvailable(SearchRequest req) {
-        validateDatesAndGuests(req);
-        List<Guesthouse> entities =
-                guesthouseRepository.findAvailableGuesthouses(
+        Sort sort = buildSort(req.getSort(), req.getDir());
+        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
+
+        return guesthouseRepository
+                .findAvailableGuesthouses(
                         req.getRegion(),
                         req.getGuests(),
                         req.getStartDate(),
-                        req.getEndDate()
-                );
-        return entities.stream().map(this::toSummary).toList();
+                        req.getEndDate(),
+                        pageable
+                )
+                .map(this::toSummary);
     }
 
-    // ----- 내부 유틸 -----
+    private Sort buildSort(String sortKey, String dir) {
+        Sort.Direction direction =
+                "desc".equalsIgnoreCase(dir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        // 평점 정렬: ratingAvg 우선, 동률 시 ratingCount(내림차순), 그다음 name(오름차순)
+        if ("rating".equalsIgnoreCase(sortKey)) {
+            return Sort.by(
+                    new Sort.Order(direction, "ratingAvg"),
+                    new Sort.Order(Sort.Direction.DESC, "ratingCount"),
+                    new Sort.Order(Sort.Direction.ASC, "name")
+            );
+        }
+
+        if ("name".equalsIgnoreCase(sortKey)) {
+            return Sort.by(new Sort.Order(direction, "name"));
+        }
+
+        // 기본: price
+        return Sort.by(new Sort.Order(direction, "price"));
+    }
+
     private GuesthouseSummary toSummary(Guesthouse g) {
         return new GuesthouseSummary(
                 g.getId(),
                 g.getName(),
                 g.getAddress(),
-                g.getRegion() == null ? null : g.getRegion().toString(), // enum → 문자열
+                g.getRegion() == null ? null : g.getRegion().toString(),
                 g.getCapacity(),
                 g.getPrice(),
-                g.getDescription()
+                g.getDescription(),
+                g.getRatingAvg(),
+                g.getRatingCount()
         );
     }
 

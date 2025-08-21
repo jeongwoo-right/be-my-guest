@@ -10,9 +10,12 @@ public class GuesthouseSummary {
     private int capacity;
     private BigDecimal price;
     private String description;
+    private BigDecimal ratingAvg;
+    private Integer ratingCount;
 
     public GuesthouseSummary(Long id, String name, String address, String region,
-                             int capacity, BigDecimal price, String description) {
+    		int capacity, BigDecimal price, String description,
+    		BigDecimal ratingAvg, Integer ratingCount) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -20,6 +23,8 @@ public class GuesthouseSummary {
         this.capacity = capacity;
         this.price = price;
         this.description = description;
+        this.ratingAvg = ratingAvg;
+        this.ratingCount = ratingCount;
     }
 
     public Long getId() { return id; }
@@ -29,4 +34,6 @@ public class GuesthouseSummary {
     public int getCapacity() { return capacity; }
     public BigDecimal getPrice() { return price; }
     public String getDescription() { return description; }
+    public BigDecimal getRatingAvg() { return ratingAvg; }
+    public Integer getRatingCount() { return ratingCount; }
 }

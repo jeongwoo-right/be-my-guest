@@ -4,13 +4,12 @@ import com.bemyguest.backend.search.dto.GuesthouseSummary;
 import com.bemyguest.backend.search.dto.SearchRequest;
 import com.bemyguest.backend.search.service.SearchService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/guesthouses")  // 명세서 유지
+@RequestMapping("/api/guesthouses")
 public class SearchController {
 
     private final SearchService searchService;
@@ -19,12 +18,10 @@ public class SearchController {
         this.searchService = searchService;
     }
 
-    // ✅ 기본 검색 엔드포인트를 '예약 겹침 제외' 로직으로 매핑
-    // POST /api/guesthouses
+    // 기본 검색: 예약 겹침 제외, 정렬/페이징 지원
     @PostMapping
-    public ResponseEntity<List<GuesthouseSummary>> search(@Valid @RequestBody SearchRequest request) {
-        List<GuesthouseSummary> result = searchService.searchAvailable(request);
+    public ResponseEntity<Page<GuesthouseSummary>> search(@Valid @RequestBody SearchRequest request) {
+        Page<GuesthouseSummary> result = searchService.searchAvailable(request);
         return ResponseEntity.ok(result);
     }
-
 }
