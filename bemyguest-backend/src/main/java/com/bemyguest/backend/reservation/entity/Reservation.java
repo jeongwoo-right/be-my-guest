@@ -16,37 +16,50 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "reservations")
-@EntityListeners(AuditingEntityListener.class) // Auditing 활성화
+@Table(
+    name = "reservations",
+    indexes = {
+        // ★ 검색 성능을 위해 추가: 게스트하우스+기간, 상태 인덱스
+        @Index(name = "idx_resv_guesthouse_dates", columnList = "guesthouse_id, checkin_date, checkout_date"),
+        @Index(name = "idx_resv_status", columnList = "status")
+    }
+)
+@EntityListeners(AuditingEntityListener.class) // Auditing 활성화 (createdAt/updatedAt 자동 세팅)
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // 친구 코드 유지: User 연관관계 (지연 로딩)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // 친구 코드 유지: Guesthouse 연관관계 (지연 로딩)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "guesthouse_id", nullable = false)
     private Guesthouse guesthouse;
 
-    @Column(nullable = false)
+    // 필드/컬럼명은 친구 코드 컨벤션에 맞춤 (낙타표기 + _date 컬럼)
+    @Column(name = "checkin_date", nullable = false)
     private LocalDate checkinDate;
 
-    @Column(nullable = false)
+    @Column(name = "checkout_date", nullable = false)
     private LocalDate checkoutDate;
 
-    @Enumerated(EnumType.STRING) // Enum 이름을 DB에 문자열로 저장
-    @Column(nullable = false)
+    // 상태는 문자열로 저장 (RESERVED/CANCELLED/COMPLETED)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private ReservationStatus status;
 
+    // Auditing 자동 관리
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     // 생성자: 예약 생성 시 초기 상태는 항상 'RESERVED'
@@ -58,16 +71,14 @@ public class Reservation {
         this.status = ReservationStatus.RESERVED; // 초기 상태 고정
     }
 
-    //== 비즈니스 로직 ==//
-    // 예약 취소
+    // == 비즈니스 로직 ==
     public void cancel() {
         if (this.status == ReservationStatus.COMPLETED) {
             throw new IllegalStateException("이미 완료된 예약은 취소할 수 없습니다.");
         }
         this.status = ReservationStatus.CANCELLED;
     }
-    
-    // 예약 완료
+
     public void complete() {
         if (this.status == ReservationStatus.CANCELLED) {
             throw new IllegalStateException("이미 취소된 예약은 완료 처리할 수 없습니다.");

@@ -1,6 +1,6 @@
 package com.bemyguest.backend.search.dto;
 
-import com.bemyguest.backend.search.entity.Region;
+import com.bemyguest.backend.guesthouse.entity.Region;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
