@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import GuesthouseDetail from "./pages/GuesthouseDetail";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import GuesthouseListPage from './pages/GuesthouseListPage';  
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/guesthouses/20" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/guesthouses/search" element={<GuesthouseListPage />} />
       </Routes>
     </BrowserRouter>
   );
