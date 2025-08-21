@@ -1,5 +1,6 @@
 package com.bemyguest.backend.search.service;
 
+import com.bemyguest.backend.search.dto.GuesthouseSummary;
 import com.bemyguest.backend.search.dto.SearchRequest;
 import com.bemyguest.backend.search.entity.Guesthouse;
 import com.bemyguest.backend.search.repository.GuesthouseRepository;
@@ -17,26 +18,42 @@ public class SearchService {
         this.guesthouseRepository = guesthouseRepository;
     }
 
-    // (이전 단계) 기본 검색: region/guests만 적용
+    // (기존) 엔티티 반환 -> (변경) DTO 반환
     @Transactional(readOnly = true)
-    public List<Guesthouse> searchBasic(SearchRequest req) {
+    public List<GuesthouseSummary> searchBasic(SearchRequest req) {
         validateDatesAndGuests(req);
-        return guesthouseRepository.findByBasicFilters(req.getRegion(), req.getGuests());
+        List<Guesthouse> entities =
+                guesthouseRepository.findByBasicFilters(req.getRegion(), req.getGuests());
+        return entities.stream().map(this::toSummary).toList();
     }
 
-    // (이번 단계) 예약 겹침 제외 검색
+    // (기존) 엔티티 반환 -> (변경) DTO 반환
     @Transactional(readOnly = true)
-    public List<Guesthouse> searchAvailable(SearchRequest req) {
+    public List<GuesthouseSummary> searchAvailable(SearchRequest req) {
         validateDatesAndGuests(req);
-        return guesthouseRepository.findAvailableGuesthouses(
-                req.getRegion(),
-                req.getGuests(),
-                req.getStartDate(),
-                req.getEndDate()
+        List<Guesthouse> entities =
+                guesthouseRepository.findAvailableGuesthouses(
+                        req.getRegion(),
+                        req.getGuests(),
+                        req.getStartDate(),
+                        req.getEndDate()
+                );
+        return entities.stream().map(this::toSummary).toList();
+    }
+
+    // ----- 내부 유틸 -----
+    private GuesthouseSummary toSummary(Guesthouse g) {
+        return new GuesthouseSummary(
+                g.getId(),
+                g.getName(),
+                g.getAddress(),
+                g.getRegion() == null ? null : g.getRegion().toString(), // enum → 문자열
+                g.getCapacity(),
+                g.getPrice(),
+                g.getDescription()
         );
     }
 
-    // 공통 유효성
     private void validateDatesAndGuests(SearchRequest req) {
         if (req.getGuests() < 1) {
             throw new IllegalArgumentException("guests는 1 이상이어야 합니다.");
