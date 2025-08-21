@@ -3,11 +3,14 @@ package com.bemyguest.backend.review.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.bemyguest.backend.guesthouse.entity.Guesthouse;
+import com.bemyguest.backend.reservation.entity.Reservation;
 import com.bemyguest.backend.user.entity.User;
 
 import java.time.LocalDateTime;

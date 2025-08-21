@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bemyguest.backend.reservation.entity.Reservation;
+import com.bemyguest.backend.reservation.entity.ReservationStatus;
+import com.bemyguest.backend.reservation.repository.ReservationRepository;
 import com.bemyguest.backend.review.dto.ReviewRequestDto;
 import com.bemyguest.backend.review.dto.ReviewResponseDto;
 import com.bemyguest.backend.review.entity.Review;
