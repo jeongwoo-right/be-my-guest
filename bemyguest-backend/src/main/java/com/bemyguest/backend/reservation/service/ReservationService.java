@@ -9,6 +9,10 @@ import com.bemyguest.backend.reservation.repository.ReservationRepository;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,5 +56,17 @@ public class ReservationService {
         
         // Entity 내부의 비즈니스 로직 호출
         reservation.complete();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> getReservationsByUser(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        
+        List<Reservation> reservations = reservationRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+
+        return reservations.stream()
+                .map(ReservationResponseDto::new)
+                .collect(Collectors.toList());
     }
 }

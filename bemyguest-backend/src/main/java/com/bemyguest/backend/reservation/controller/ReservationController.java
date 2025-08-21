@@ -4,6 +4,9 @@ import com.bemyguest.backend.reservation.dto.ReservationRequestDto;
 import com.bemyguest.backend.reservation.dto.ReservationResponseDto;
 import com.bemyguest.backend.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,5 +37,13 @@ public class ReservationController {
     public ResponseEntity<String> completeReservation(@PathVariable("reservation_id") long reservationId) {
         reservationService.completeReservation(reservationId);
         return ResponseEntity.ok("예약이 성공적으로 완료 처리되었습니다.");
+    }
+    
+    @GetMapping("/{user_id}/search")
+    public ResponseEntity<List<ReservationResponseDto>> getReservationsForUser(
+            @PathVariable("user_id") long userId) {
+                
+        List<ReservationResponseDto> reservations = reservationService.getReservationsByUser(userId);
+        return ResponseEntity.ok(reservations);
     }
 }
