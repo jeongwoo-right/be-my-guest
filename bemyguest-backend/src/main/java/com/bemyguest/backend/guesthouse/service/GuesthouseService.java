@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class GuesthouseService {
 
     private final GuesthouseRepository guesthouseRepository;
@@ -25,8 +26,9 @@ public class GuesthouseService {
                 .id(g.getId())
                 .name(g.getName())
                 .address(g.getAddress())
-                .region(g.getRegion() != null ? g.getRegion().getKr() : null)          // String
-                .capacity(g.getCapacity())      // capacity
+                // 🔥 getKr() 대신 enum 이름 그대로 사용
+                .region(g.getRegion() != null ? g.getRegion().toString() : null)
+                .capacity(g.getCapacity())
                 .price(g.getPrice())
                 .description(g.getDescription())
                 .wifi(f != null ? f.getWifi() : null)
@@ -39,5 +41,4 @@ public class GuesthouseService {
                 .petAllowed(f != null ? f.getPetAllowed() : null)
                 .build();
     }
-
 }
