@@ -30,7 +30,7 @@ const MyInfoTab: React.FC = () => {
     }).catch(err => console.error(err));
   };
 
-  if (!user) return <p>로딩 중...</p>;
+  if (!user) return <p>로딩 중...현재 MyInfoTab입니다.</p>;
 
   return (
     <div>

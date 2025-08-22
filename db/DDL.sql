@@ -1,5 +1,4 @@
-USE sdsdb;
-
+USE bemyguest;
 -- 안전 실행을 위해
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -20,18 +19,19 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- 2) 게스트하우스
 -- region은 운영 편의상 ENUM으로 구성 (필요 시 별도 지역 테이블 권장)
-CREATE TABLE IF NOT EXISTS guesthouses (
-  id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name         VARCHAR(100)    NOT NULL,
-  address      VARCHAR(255)    NOT NULL,
-  region       ENUM('서울','경기','인천','부산','대구','대전','광주','울산','세종',
-                    '강원','충북','충남','전북','전남','경북','경남','제주') NOT NULL,
-  capacity     INT             NOT NULL,
-  price        DECIMAL(10,2)   NOT NULL,
-  description  TEXT            NULL,
-  PRIMARY KEY (id),
-  KEY idx_guesthouses_region (region)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE guesthouses (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    region VARCHAR(50) NOT NULL,
+    capacity INT NOT NULL,
+    price INT NOT NULL,
+    description TEXT,
+    rating_avg DECIMAL(3,1) DEFAULT 0.0,   -- 평균 평점 (소수점 1자리)
+    rating_count INT DEFAULT 0,            -- 리뷰 개수
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- 2-1) 부대시설 (guesthouses : facilities = 1 : 1)
 CREATE TABLE IF NOT EXISTS facilities (
