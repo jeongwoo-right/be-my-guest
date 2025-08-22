@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bemyguest.backend.guesthouse.entity.Guesthouse;
 import com.bemyguest.backend.reservation.entity.Reservation;
 import com.bemyguest.backend.reservation.entity.ReservationStatus;
 import com.bemyguest.backend.reservation.repository.ReservationRepository;
@@ -25,17 +26,15 @@ public class ReviewService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository; // UserRepository 주입
 
-    // 1. 리뷰 작성
+ // 1. 리뷰 작성
     @Transactional
     public ReviewResponseDto createReview(long reservationId, ReviewRequestDto requestDto) {
-        // [변경] DTO에서 userId를 가져와 User 객체를 조회
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 예약을 찾을 수 없습니다."));
         
-        // ... (이하 로직은 기존과 유사)
         if (reservation.getStatus() != ReservationStatus.COMPLETED) {
             throw new IllegalStateException("예약이 완료된 상태에서만 리뷰를 작성할 수 있습니다.");
         }
@@ -45,8 +44,12 @@ public class ReviewService {
         if (reviewRepository.existsByReservationId(reservationId)) {
             throw new IllegalStateException("이미 작성된 리뷰가 존재합니다.");
         }
+        
+        // ★ 추가: Guesthouse 평점 갱신
+        Guesthouse guesthouse = reservation.getGuesthouse();
+        guesthouse.addReview(requestDto.getRating());
 
-        Review review = new Review(reservation, user, reservation.getGuesthouse(), requestDto.getRating(), requestDto.getContent());
+        Review review = new Review(reservation, user, guesthouse, requestDto.getRating(), requestDto.getContent());
         reviewRepository.save(review);
 
         return new ReviewResponseDto(review);
@@ -55,16 +58,26 @@ public class ReviewService {
     // 2. 리뷰 수정
     @Transactional
     public void updateReview(long reviewId, ReviewRequestDto requestDto) {
-        // [변경] DTO에서 userId를 가져와 권한 확인
         Review review = findReviewAndCheckAuthority(reviewId, requestDto.getUserId());
+
+        // ★ 추가: Guesthouse 평점 갱신
+        int oldRating = review.getRating();
+        Guesthouse guesthouse = review.getGuesthouse();
+        guesthouse.updateReview(oldRating, requestDto.getRating());
+        
         review.update(requestDto.getRating(), requestDto.getContent());
     }
 
     // 3. 리뷰 삭제
     @Transactional
     public void deleteReview(long reviewId, long userId) {
-        // [변경] 파라미터로 받은 userId로 권한 확인
         Review review = findReviewAndCheckAuthority(reviewId, userId);
+        
+        // ★ 추가: Guesthouse 평점 갱신
+        int deletedRating = review.getRating();
+        Guesthouse guesthouse = review.getGuesthouse();
+        guesthouse.deleteReview(deletedRating);
+
         reviewRepository.delete(review);
     }
 
