@@ -1,0 +1,122 @@
+/* GuesthouseCard.css */
+
+/* 카드 전체에 테두리와 패딩 추가 */
+.guesthouse-card {
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.guesthouse-card:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+
+.card-image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 66.66%;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px; /* 이미지와 텍스트 사이 간격 */
+}
+
+.card-image-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 이미지가 잘려도 비율을 유지 */
+  transition: transform 0.3s ease;
+}
+
+.wish-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); /* 그림자 효과 */
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; 
+}
+
+/* 제목 & 평점 */
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2px;
+}
+
+.card-title h3 {
+  margin: 0;
+  font-size: 20px; /* [디자인 개선] 폰트 크기를 더 균형있게 조정 */
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 설명 */
+.card-description {
+  font-size: 14px;
+  color: #717171;
+  margin: 0 0 8px; /* [디자인 개선] 아래쪽 여백을 주어 하단 정보와 간격 확보 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+/* 하단 정보 (최대인원 & 가격) */
+.card-bottom-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto; /* [문제 해결] 이 속성이 큰 공백을 만들므로 아래로 이동 */
+}
+
+/* 최대인원 */
+.card-address {
+  font-size: 14px;
+  color: #717171;
+  margin: 0;
+}
+
+/* 가격 */
+.card-price {
+  font-size: 14px;
+  color: #222;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* [디자인 개선] '/박' 텍스트를 다시 추가합니다. */
+.card-price::after {
+  content: " / 박";
+  font-weight: 400;
+  color: #222;
+}

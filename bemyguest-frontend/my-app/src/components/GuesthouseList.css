@@ -1,0 +1,16 @@
+/* GuesthouseList.css */
+
+/* 게스트하우스 카드를 담는 그리드 컨테이너 */
+.guesthouse-grid {
+  display: grid;
+  /* 화면 너비에 따라 최소 300px 너비의 카드를 가능한 많이 채웁니다 */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 40px 24px; /* 행(세로) 간격 40px, 열(가로) 간격 24px */
+}
+
+/* 로딩 또는 검색 결과 없음 메시지 스타일 */
+.guesthouse-grid p {
+  grid-column: 1 / -1; /* 메시지가 그리드 전체 너비를 차지하도록 설정 */
+  font-size: 15px;
+  color: #666;
+}
