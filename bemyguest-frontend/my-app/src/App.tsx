@@ -3,6 +3,7 @@ import GuesthouseDetail from "./pages/GuesthouseDetail";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import GuesthouseListPage from './pages/GuesthouseListPage';  
+import MyPage from "./pages/MyPage/MyPage";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/guesthouses/search" element={<GuesthouseListPage />} />
+        <Route path="/mypage" element={<MyPage />} />
       </Routes>
     </BrowserRouter>
   );
