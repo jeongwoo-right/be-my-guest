@@ -44,3 +44,21 @@
   font-weight: 600;
   color: #333;
 }
+
+/* 정렬 컨트롤 영역 스타일 */
+.sort-controls {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px; /* 목록과의 간격 */
+}
+
+/* 드롭다운 메뉴(select) 스타일 */
+.sort-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+}
