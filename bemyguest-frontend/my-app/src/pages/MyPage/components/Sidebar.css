@@ -1,0 +1,46 @@
+/* 컨테이너 */
+.sidebar {
+  width: 220px;
+  border-right: 1px solid #eee;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;     /* 부모 높이에 맞추기 */
+  min-height: 100vh; /* 뷰포트 전체 높이 채우기 */
+  box-sizing: border-box;
+}
+
+/* 리스트 */
+.sidebar__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1; /* 남는 공간 채우기 */
+}
+
+/* 버튼 기본 */
+.sidebar__button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sidebar__button:hover {
+  background: #f9f9f9;
+}
+
+.sidebar__button.is-active {
+  border-color: #ff385c;
+  background: #fff5f7;
+  font-weight: 700;
+}

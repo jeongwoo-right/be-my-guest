@@ -3,6 +3,8 @@ import MyInfoTab from "./components/MyInfoTab";
 import MyBookingTab from "./components/MyBookingTab";
 import MyReviewTab from "./components/MyReviewTab";
 import MyWishlistTab from "./components/MyWishlistTab";
+import Sidebar from "./components/Sidebar";
+import "./MyPage.css";
 
 const MyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("info");
@@ -18,16 +20,27 @@ const MyPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "20px auto" }}>
-      <h2>마이페이지</h2>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        <button onClick={() => setActiveTab("info")}>나의 정보</button>
-        <button onClick={() => setActiveTab("booking")}>나의 예약</button>
-        <button onClick={() => setActiveTab("review")}>나의 후기</button>
-        <button onClick={() => setActiveTab("wishlist")}>나의 찜</button>
-      </div>
-      {renderTabContent()}
+  <div className="mypage-container">
+    {/* <h2 className="mypage-title">마이페이지</h2> */}
+    <div className="mypage-layout">
+      {/* 왼쪽: 사이드바 (activeTab을 런타임에서 TabKey로 안전하게 좁혀서 전달) */}
+      <Sidebar
+        activeTab={
+          (activeTab === "info" ||
+            activeTab === "booking" ||
+            activeTab === "review" ||
+            activeTab === "wishlist"
+            ? activeTab
+            : "info") as "info" | "booking" | "review" | "wishlist"
+        }
+        onChange={(k) => setActiveTab(k)}  // onChange 시그니처를 TabKey로 고정
+    />
+      {/* 오른쪽: 렌더링 영역 */}
+      <section className="mypage-content">
+        {renderTabContent()}
+      </section>
     </div>
+  </div>
   );
 };
 

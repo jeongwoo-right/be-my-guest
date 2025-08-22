@@ -1,0 +1,66 @@
+/* Header.css */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff385c; /* Airbnb red */
+}
+
+.search-bar {
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08),
+              0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  margin-right: 10px;
+}
+
+.user-menu {
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 요소 간격 */
+}
+
+.menu-icon {
+  margin-right: 5px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+}
+
+.login-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ff385c;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.login-button:hover {
+  background-color: #e03150;
+}

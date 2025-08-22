@@ -1,0 +1,15 @@
+/* .mypage-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+} */
+
+.mypage-title {
+  margin: 16px 0;
+}
+
+/* 사이드바 + 콘텐츠를 나누는 영역 */
+.mypage-layout {
+  display: flex;
+  min-height: calc(100vh - 80px); /* 헤더 높이(80px 가정) 빼고 전체 화면 채우기 */
+}

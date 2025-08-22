@@ -4,10 +4,12 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import GuesthouseListPage from './pages/GuesthouseListPage';  
 import MyPage from "./pages/MyPage/MyPage";
+import Header from "./components/Header";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Header/>
       <Routes>
         {/* /guesthouses/20 같은 경로에서 상세 페이지 */}
         <Route path="/guesthouses/:id" element={<GuesthouseDetail />} />
