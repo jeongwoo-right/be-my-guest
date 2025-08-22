@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Guesthouse } from '../services/guesthouseService';
 import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa'; // 하트와 별 아이콘
 import './GuesthouseCard.css'; // 카드 전용 CSS
+import { BACKEND_URL } from '../services/api';
 
 interface GuesthouseCardProps {
   guesthouse: Guesthouse;
@@ -28,7 +29,10 @@ const GuesthouseCard: React.FC<GuesthouseCardProps> = ({ guesthouse }) => {
     // 4. div에 onClick 이벤트를 추가합니다.
     <div className="guesthouse-card" onClick={handleCardClick}>
       <div className="card-image-wrapper">
-        <img src={`https://via.placeholder.com/300x200?text=${guesthouse.name}`} alt={guesthouse.name} />
+        <img 
+          src={`${BACKEND_URL}/thumbnail/guesthouse/${guesthouse.id}.jpg`} 
+          alt={guesthouse.name} 
+        />
         <button className="wish-button" onClick={toggleWish}>
           {isWished ? <FaHeart color="red" /> : <FaRegHeart />}
         </button>
