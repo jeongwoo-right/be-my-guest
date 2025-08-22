@@ -1,78 +1,12 @@
-/* 전체 페이지 컨테이너 */
+/* GuesthouseListPage.css */
+
+/* 페이지 전체를 감싸는 컨테이너 */
 .guesthouse-list-container {
   width: 90%;
-  max-width: 1200px;
-  margin: 40px auto; /* 위아래 40px, 좌우 자동 간격으로 중앙 정렬 */
+  max-width: 1440px; /* 좀 더 넓은 레이아웃 */
+  margin: 20px auto; /* 상단 여백 감소 */
   padding: 20px;
-  font-family: sans-serif;
-}
-
-/* 검색 결과 제목 */
-.guesthouse-list-container h1 {
-  font-size: 28px;
-  margin-bottom: 30px;
-  text-align: center;
-  color: #333;
-}
-
-/* 게스트하우스 목록을 감싸는 영역 (그리드 컨테이너) */
-.results-area {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 화면 크기에 맞춰 자동으로 열 개수 조절 */
-  gap: 30px; /* 아이템 사이의 간격 */
-  margin-bottom: 50px;
-}
-
-/* 개별 게스트하우스 아이템 (카드 디자인) */
-.guesthouse-item {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  overflow: hidden; /* 이미지가 카드를 삐져나가지 않도록 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  cursor: pointer;
-  background-color: #fff;
-}
-
-/* 마우스를 올렸을 때 살짝 떠오르는 효과 */
-.guesthouse-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* 게스트하우스 썸네일 이미지 */
-.guesthouse-item img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover; /* 이미지가 잘리더라도 비율을 유지 */
-  display: block;
-}
-
-/* 게스트하우스 이름 */
-.guesthouse-item h3 {
-  font-size: 18px;
-  margin: 15px;
-  color: #222;
-  white-space: nowrap; /* 이름이 길어도 한 줄로 표시 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 위치 정보 */
-.guesthouse-item p {
-  font-size: 14px;
-  margin: 0 15px 10px;
-  color: #666;
-}
-
-/* 가격 정보 */
-.guesthouse-item span {
-  display: block;
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0 15px 15px;
-  text-align: right; /* 오른쪽 정렬 */
-  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* 페이지네이션 영역 */
@@ -80,36 +14,33 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px; /* 버튼과 숫자 사이 간격 */
+  gap: 15px;
+  margin-top: 50px; /* 목록과의 간격 */
 }
 
-/* 페이지네이션 버튼 기본 스타일 */
 .pagination-area button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   background-color: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s, color 0.2s;
+  font-weight: 500;
+  transition: box-shadow 0.2s;
 }
 
-/* 페이지네이션 버튼에 마우스를 올렸을 때 */
 .pagination-area button:hover:not(:disabled) {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
+  border-color: #aaa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
-/* 비활성화된 버튼 스타일 */
 .pagination-area button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  color: #ccc;
 }
 
-/* 현재 페이지/전체 페이지 텍스트 */
 .pagination-area span {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   color: #333;
 }

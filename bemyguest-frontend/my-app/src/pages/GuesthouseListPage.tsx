@@ -1,86 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-// 1. 서비스 파일 이름과 함수 이름, 타입을 정확하게 import 합니다.
+
+// API 서비스와 타입 import
 import { searchGuesthouses } from '../services/guesthouseService';
-import type { Guesthouse } from '../services/guesthouseService';
+import type { Guesthouse, GuesthouseSearchRequest } from '../services/guesthouseService';
+
+// 자식 컴포넌트들 import
+import SearchBar from '../components/SearchBar';
+import GuesthouseList from '../components/GuesthouseList';
+import Pagination from '../components/Pagination';
+
+// 페이지 전용 CSS import
 import './GuesthouseListPage.css';
 
 const GuesthouseListPage: React.FC = () => {
-  // 상태 변수들
-  const [guesthouses, setGuesthouses] = useState<Guesthouse[]>([]); // 게스트하우스 목록
-  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 번호
-  const [totalPages, setTotalPages] = useState(0); // 🌟 전체 페이지 수 상태 추가
-  const [isLoading, setIsLoading] = useState(true); // 로딩 중인지 여부
+  // --- 상태 관리 (State) ---
+  const [guesthouses, setGuesthouses] = useState<Guesthouse[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // URL에서 검색어(keyword) 가져오기
-  const [searchParams] = useSearchParams();
-  const keyword = searchParams.get('keyword') || '';
+  // URL의 쿼리 파라미터를 읽고 쓰기 위한 hook
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // 페이지가 열리거나, 검색어/페이지 번호가 바뀔 때마다 실행될 로직
+  // --- 데이터 로딩 (Effect) ---
+  // searchParams나 currentPage가 변경될 때마다 실행
   useEffect(() => {
-    // 검색어가 없으면 API를 호출하지 않음
-    if (!keyword) {
-      setIsLoading(false);
+    // URL에서 검색 조건들을 가져옴
+    const region = searchParams.get('region');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const guests = searchParams.get('guests');
+
+    // 필수 검색 조건이 URL에 있을 때만 API를 호출
+    if (region && startDate && endDate && guests) {
+      const loadGuesthouses = async () => {
+        setIsLoading(true);
+
+        const searchRequest: GuesthouseSearchRequest = {
+          region,
+          startDate,
+          endDate,
+          guests: Number(guests),
+          page: currentPage - 1, // API는 0-indexed, UI는 1-indexed
+          size: 10,
+          sort: 'rating', // 기본 정렬값
+          dir: 'desc',
+        };
+
+        const response = await searchGuesthouses(searchRequest);
+        
+        setGuesthouses(response.content);
+        setTotalPages(response.totalPages);
+        setIsLoading(false);
+      };
+
+      loadGuesthouses();
+    } else {
+      // 필수 검색 조건이 없으면 목록을 비움
       setGuesthouses([]);
-      return;
     }
-  
-    const loadGuesthouses = async () => {
-      setIsLoading(true); // 로딩 시작
-      // 2. API 응답에서 content와 totalPages를 구조 분해 할당으로 받습니다.
-      const response = await searchGuesthouses(keyword, currentPage);
-      setGuesthouses(response.content); // 실제 게스트하우스 목록은 content에 있습니다.
-      setTotalPages(response.totalPages); // 전체 페이지 수 상태를 업데이트합니다.
-      setIsLoading(false); // 로딩 끝
-    };
+  }, [searchParams, currentPage]);
 
-    loadGuesthouses();
-  }, [keyword, currentPage]); // keyword나 currentPage가 바뀔 때마다 이 함수를 다시 실행
+  // --- 이벤트 핸들러 ---
 
-  // 페이지 변경 핸들러 함수
+  // SearchBar 컴포넌트에서 '검색' 버튼을 눌렀을 때 실행될 함수
+  const handleSearch = (criteria: { region: string; startDate: string; endDate: string; guests: number }) => {
+    // 검색 조건으로 URL의 쿼리 파라미터를 업데이트
+    // 이 업데이트가 발생하면 위의 useEffect가 자동으로 다시 실행됨
+    setSearchParams({
+      region: criteria.region,
+      startDate: criteria.startDate,
+      endDate: criteria.endDate,
+      guests: String(criteria.guests),
+    });
+    // 새로운 검색이므로 1페이지로 리셋
+    setCurrentPage(1);
+  };
+
+  // Pagination 컴포넌트에서 페이지 번호를 클릭했을 때 실행될 함수
   const handlePageChange = (newPage: number) => {
-    // 페이지 번호가 1과 totalPages 사이일 때만 상태 변경
     if (newPage > 0 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      // 페이지 스크롤을 맨 위로 올리는 사용자 경험 개선 코드
+      window.scrollTo(0, 0);
     }
   };
 
+  // --- 렌더링 (Return JSX) ---
   return (
     <div className="guesthouse-list-container">
-      <h1>'{keyword}' 검색 결과</h1>
-      <div className="results-area">
-        {isLoading ? (
-          <p>검색 결과를 불러오는 중입니다...</p>
-        ) : guesthouses.length > 0 ? (
-          guesthouses.map(guesthouse => (
-            <div key={guesthouse.id} className="guesthouse-item">
-              <img src={guesthouse.thumbnailUrl} alt={guesthouse.name} />
-              <h3>{guesthouse.name}</h3>
-              <p>{guesthouse.location}</p>
-              <span>1박 {guesthouse.price.toLocaleString()}원</span>
-            </div>
-          ))
-        ) : (
-          <p>검색 결과가 없습니다.</p>
-        )}
-      </div>
+      {/* 검색 바 컴포넌트 */}
+      <SearchBar onSearch={handleSearch} />
 
-      {/* 3. 페이지네이션 UI 개선 */}
-      <div className="pagination-area">
-        <button 
-          onClick={() => handlePageChange(currentPage - 1)} 
-          disabled={currentPage === 1} // 첫 페이지일 때 '이전' 버튼 비활성화
-        >
-          이전
-        </button>
-        <span> {currentPage} / {totalPages} </span>
-        <button 
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages} // 마지막 페이지일 때 '다음' 버튼 비활성화
-        >
-          다음
-        </button>
-      </div>
+      {/* 게스트하우스 목록 컴포넌트 */}
+      <GuesthouseList guesthouses={guesthouses} isLoading={isLoading} />
+
+      {/* 페이지네이션 컴포넌트 (결과가 있을 때만 표시) */}
+      {totalPages > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   );
 };
