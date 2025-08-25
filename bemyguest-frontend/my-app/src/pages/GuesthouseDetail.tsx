@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useParams } from "react-router-dom";
-import api from "../services/api"
+import api from "../services/api";
+import { addWish, removeWish, getWishList } from "../services/wish";
+
+
+
 
 /** ───────────────── Types ───────────────── */
 
@@ -10,7 +14,18 @@ type ReservationRequest = {
   checkinDate: string;   // YYYY-MM-DD
   checkoutDate: string;  // YYYY-MM-DD
 };
-``
+
+type ReservationResponse = {
+  id: number;
+  userId: number;
+  guesthouseId: number;
+  checkinDate: string;
+  checkoutDate: string;
+  status: "RESERVED" | "CANCELLED" | "COMPLETED";
+  createdAt: string;
+  updatedAt: string;
+};
+
 type Guesthouse = {
   id: number;
   name: string;
@@ -46,8 +61,8 @@ type Review = {
   createdAt: string; // ISO string
 };
 
-/** ───────────────── Config (flip later) ───────────────── */
-const MOCK_MODE = true; // 👉 실제 API 붙이면 false로 바꾸고 fetch 주석 해제
+/** ───────────────── Config ───────────────── */
+const MOCK_MODE = false; // 실제 API 사용
 
 /** 테스트용 로그인/회원 상태 (실제 로그인 붙기 전까지) */
 const DEMO_USER = { id: 1, name: "나", isMember: true };
@@ -56,6 +71,10 @@ const DEMO_USER = { id: 1, name: "나", isMember: true };
 export default function GuesthouseDetail() {
   const { id } = useParams();
   const gid = id ?? ""; // for localStorage keys
+
+const [likeBusy, setLikeBusy] = useState(false);
+const [likedLoading, setLikedLoading] = useState(true);
+
 
   const [data, setData] = useState<Guesthouse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +92,7 @@ export default function GuesthouseDetail() {
     guests: 1,
   });
   const [reserveMsg, setReserveMsg] = useState<string | null>(null);
+  const [reserving, setReserving] = useState(false);
 
   // reviews
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -89,10 +109,8 @@ export default function GuesthouseDetail() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/guesthouses/${id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = (await res.json()) as Guesthouse;
-        setData(json);
+        const res = await api.get<Guesthouse>(`/guesthouses/${id}`);
+        setData(res.data);
       } catch (e: any) {
         setError(e?.message ?? "Failed to load");
       } finally {
@@ -102,23 +120,42 @@ export default function GuesthouseDetail() {
   }, [id]);
 
   /** Load liked + reviews from localStorage (mock persistence) */
-  useEffect(() => {
-    if (!gid) return;
-    try {
-      const lk = localStorage.getItem(`gh:${gid}:liked`);
-      if (lk) setLiked(lk === "1");
+// ❶ reviews: keep localStorage (unchanged)
+useEffect(() => {
+  if (!gid) return;
+  try {
+    const raw = localStorage.getItem(`gh:${gid}:reviews`);
+    setReviews(raw ? (JSON.parse(raw) as Review[]) : []);
+  } catch {
+    setReviews([]);
+  }
+}, [gid]);
 
-      const raw = localStorage.getItem(`gh:${gid}:reviews`);
-      if (raw) {
-        setReviews(JSON.parse(raw) as Review[]);
-      } else {
-        // seed with empty or a sample if you want
-        setReviews([]);
+// ❷ liked: sync from server list whenever route/user changes
+useEffect(() => {
+  const run = async () => {
+    setLikedLoading(true);
+    try {
+      if (!id || !isMember) {
+        setLiked(false);
+        return;
       }
-    } catch {
-      /* ignore */
+      const list = await getWishList(DEMO_USER.id); // TODO: 실제 로그인 사용자 ID
+      const currentId = Number(id);
+      const has = list.some(w => w.guesthouseId === currentId);
+      setLiked(has);
+      // optional fallback cache
+      localStorage.setItem(`gh:${id}:liked`, has ? "1" : "0");
+    } catch (e) {
+      // 서버 조회 실패 시 로컬 캐시로 폴백
+      const lk = localStorage.getItem(`gh:${id}:liked`);
+      if (lk) setLiked(lk === "1");
+    } finally {
+      setLikedLoading(false);
     }
-  }, [gid]);
+  };
+  run();
+}, [id, isMember]);
 
   /** Persist liked/reviews */
   useEffect(() => {
@@ -136,49 +173,42 @@ export default function GuesthouseDetail() {
     []
   );
 
-  /** Like toggle */
-  const toggleLike = async () => {
-    const next = !liked;
-    setLiked(next);
+  /** Like toggle (local-only; wire to backend later if needed) */
+const toggleLike = async () => {
+  if (!data || likeBusy) return;
 
-    if (!MOCK_MODE && id) {
-      try {
-        const method = next ? "POST" : "DELETE";
-        await fetch(`/api/guesthouses/${id}/wishlist`, { method, credentials: "include" });
-      } catch {
-        // rollback if failed
-        setLiked(!next);
-      }
+  if (!isMember) {
+    alert("회원만 이용 가능합니다.");
+    return;
+  }
+
+  const userId = DEMO_USER.id;                           // TODO: 실제 로그인 사용자 ID로 교체
+  const guesthouseId = data?.id ?? Number(id);           // URL과 데이터 동기화 보장
+  if (!Number.isFinite(guesthouseId)) return;
+
+  const next = !liked;
+  setLiked(next);        // UI 낙관적 업데이트
+  setLikeBusy(true);
+
+  try {
+    if (next) {
+      await addWish(userId, guesthouseId);               // 찜 추가
+    } else {
+      await removeWish(userId, guesthouseId);            // 찜 해제 (스펙 확정되면 wish.ts에서 한 패턴만 남기세요)
     }
-  };
+    // 성공 시 LocalStorage도 반영(이미 하고 있다면 생략 가능)
+    localStorage.setItem(`gh:${guesthouseId}:liked`, next ? "1" : "0");
+  } catch (e) {
+    // 실패 시 롤백
+    console.error("[wish] toggle failed", e);
+    setLiked(!next);
+    alert("찜 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+  } finally {
+    setLikeBusy(false);
+  }
+};
 
-  /** Reservation submit (mock) */
-//   const submitReservation = async () => {
-//     if (!id) return;
-//     setReserveMsg(null);
-//     try {
-//       if (!reserveForm.checkIn || !reserveForm.checkOut) {
-//         setReserveMsg("체크인/체크아웃 날짜를 선택해주세요.");
-//         return;
-//       }
-//       if (MOCK_MODE) {
-//         await new Promise((r) => setTimeout(r, 400));
-//       } else {
-//         await fetch(`/api/guesthouses/${id}/reservations`, {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           credentials: "include",
-//           body: JSON.stringify(reserveForm),
-//         });
-//       }
-//       setReserveMsg("예약 요청이 전송되었습니다. (mock)");
-//       setShowReserve(false);
-//       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
-//     } catch (e: any) {
-//       setReserveMsg(e?.message ?? "예약 실패");
-//     }
-//   };
-
+  /** Reservation submit */
 const submitReservation = async () => {
   if (!id) return;
   setReserveMsg(null);
@@ -196,34 +226,54 @@ const submitReservation = async () => {
     setReserveMsg("회원만 예약할 수 있습니다.");
     return;
   }
+  if (reserveForm.guests > (data?.capacity ?? 1)) {
+    setReserveMsg(`최대 인원(${data?.capacity}명)을 초과했습니다.`);
+    return;
+  }
 
   try {
-    // TODO: 실제 로그인 붙으면 현재 사용자 ID 사용
-    const currentUserId = 1;  // 임시값 (DEMO)
     const payload: ReservationRequest = {
-      userId: currentUserId,
+      userId: 1, // TODO: 로그인 연동 시 실제 사용자 ID 사용
       guesthouseId: Number(id),
-      checkinDate: reserveForm.checkIn,
-      checkoutDate: reserveForm.checkOut,
+      checkinDate: reserveForm.checkIn,   // "YYYY-MM-DD"
+      checkoutDate: reserveForm.checkOut, // "YYYY-MM-DD"
     };
 
     const res = await api.post("/reservations", payload);
 
-    // 201 Created 기대
     if (res.status !== 201 && res.status !== 200) {
       throw new Error(`Unexpected status ${res.status}`);
     }
 
-    setReserveMsg("예약이 생성되었습니다!");
+    const created: any = res.data;
+    setReserveMsg(`예약이 생성되었습니다! (예약번호 #${created?.id ?? "알수없음"})`);
     setShowReserve(false);
     setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
   } catch (e: any) {
-    // 서버가 400이면 e.response?.data에 에러 메시지(String)가 있을 수 있음
-    const msg =
-      e?.response?.data ??
-      e?.message ??
-      "예약 생성에 실패했습니다.";
-    setReserveMsg(String(msg));
+    const status = e?.response?.status;
+    const body = e?.response?.data;
+
+    // Normalize error message (string or JSON object)
+    let msg = "예약 생성에 실패했습니다.";
+    if (typeof body === "string") {
+      msg = body;
+    } else if (body && typeof body === "object") {
+      msg = body.message || body.error || JSON.stringify(body);
+    } else if (e?.message) {
+      msg = e.message;
+    }
+
+    // Common cases
+    if (status === 409) msg = "해당 기간에는 이미 예약이 존재합니다.";
+    if (status === 404) msg = "사용자 또는 게스트하우스를 찾을 수 없습니다.";
+    if (status === 400 && /Unrecognized|Cannot deserialize|JSON parse/i.test(String(body))) {
+      msg = "요청 형식이 서버와 일치하지 않습니다. (필드명/날짜형식 확인)";
+    }
+    if (status === 403) msg = "권한이 없습니다. (로그인이 필요할 수 있어요)";
+
+    setReserveMsg(msg);
+    // 디버깅용 로그 (원인 파악 시 유용)
+    // console.error("Reservation error:", { status, body, err: e });
   }
 };
 
@@ -235,14 +285,12 @@ const submitReservation = async () => {
     if (!reviewDraft.text.trim()) return;
 
     if (editing) {
-      // update
       const updated = reviews.map((r) =>
         r.id === editing.id ? { ...r, rating: reviewDraft.rating, text: reviewDraft.text } : r
       );
       setReviews(updated);
       setEditing(null);
     } else {
-      // create
       const newReview: Review = {
         id: Date.now(),
         userId: DEMO_USER.id,
@@ -255,7 +303,7 @@ const submitReservation = async () => {
     }
 
     if (!MOCK_MODE) {
-      // await fetch(`/api/guesthouses/${id}/reviews`, { method: editing ? "PUT" : "POST", ... });
+      // await api.post(`/guesthouses/${id}/reviews`, ...);
     }
     setReviewDraft({ rating: 5, text: "" });
   };
@@ -269,7 +317,7 @@ const submitReservation = async () => {
   const deleteReview = (rid: number) => {
     setReviews((prev) => prev.filter((r) => r.id !== rid));
     if (!MOCK_MODE) {
-      // await fetch(`/api/guesthouses/${id}/reviews/${rid}`, { method: "DELETE" });
+      // await api.delete(`/guesthouses/${id}/reviews/${rid}`);
     }
   };
 
@@ -295,17 +343,22 @@ const submitReservation = async () => {
 
           {/* Actions */}
           <div style={styles.actions}>
-            <button
-              onClick={toggleLike}
-              aria-pressed={liked}
-              style={{
-                ...styles.btn,
-                ...styles.btnGhost,
-                borderColor: liked ? "#f66" : "#ddd",
-              }}
-            >
-              {liked ? "❤️ 찜 해제" : "🤍 찜하기"}
-            </button>
+<button
+  onClick={toggleLike}
+  aria-pressed={liked}
+  disabled={likeBusy || likedLoading}
+  style={{
+    ...styles.btn,
+    ...styles.btnGhost,
+    borderColor: liked ? "#f66" : "#ddd",
+    opacity: likeBusy || likedLoading ? 0.6 : 1,
+    pointerEvents: likeBusy || likedLoading ? "none" : "auto",
+  }}
+>
+  {liked ? "❤️ 찜 해제" : "🤍 찜하기"}
+</button>
+
+
 
             <button
               onClick={() => setShowReserve(true)}
@@ -463,15 +516,23 @@ const submitReservation = async () => {
             {reserveMsg && <div style={{ color: "#c00", marginBottom: 8 }}>{reserveMsg}</div>}
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button style={{ ...styles.btn, ...styles.btnGhost }} onClick={() => setShowReserve(false)}>
+              <button
+                style={{ ...styles.btn, ...styles.btnGhost }}
+                onClick={() => setShowReserve(false)}
+                disabled={reserving}
+              >
                 취소
               </button>
-              <button style={{ ...styles.btn, ...styles.btnPrimary }} onClick={submitReservation}>
-                예약 요청
+              <button
+                style={{ ...styles.btn, ...styles.btnPrimary }}
+                onClick={submitReservation}
+                disabled={reserving}
+              >
+                {reserving ? "예약 요청 중..." : "예약 요청"}
               </button>
             </div>
             <div style={{ marginTop: 8, color: "#888", fontSize: 12 }}>
-              * 실제 API 연결 전까지는 모의로만 동작합니다.
+              * 실제 API 연결 상태입니다.
             </div>
           </div>
         </div>
@@ -544,7 +605,7 @@ function renderStars(n: number) {
 }
 
 /** ───────────────── Styles ───────────────── */
-const styles: Record<string, React.CSSProperties> = {
+const styles: Record<string, CSSProperties> = {
   page: {
     minHeight: "100vh",
     display: "flex",
@@ -651,6 +712,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    zIndex: 1000,
   },
   modal: {
     width: "100%",
