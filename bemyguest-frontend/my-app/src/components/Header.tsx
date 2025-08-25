@@ -7,12 +7,8 @@ const Header: React.FC = () => {
       {/* 로고 */}
       <div className="logo">BeMyGuest</div>
 
-      {/* 사용자 메뉴 */}
-      <div className="user-menu">
-        {/* <div className="avatar"></div> */}
-        <button className="login-button">로그인</button>
-        <div className="menu-icon">☰</div>
-      </div>
+      {/* 로그인 버튼 */}
+      <button className="login-button">로그인</button>
     </header>
   );
 };
