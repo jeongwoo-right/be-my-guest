@@ -34,7 +34,12 @@
   margin-right: 5px;
 }
 
-.login-button {
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-button {
   padding: 6px 12px;
   border: none;
   border-radius: 20px;
@@ -45,6 +50,11 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.login-button:hover {
+.user-header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-button:hover {
   background-color: #e03150;
 }

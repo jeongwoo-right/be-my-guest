@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bemyguest.backend.guesthouse.entity.Guesthouse;
+import com.bemyguest.backend.guesthouse.repository.GuesthouseRepository;
 import com.bemyguest.backend.reservation.repository.ReservationRepository;
 import com.bemyguest.backend.review.repository.ReviewRepository;
 import com.bemyguest.backend.user.entity.User;
@@ -27,6 +29,8 @@ public class WishService {
 	
 	private final WishRepository wishRepository;
 	private final UserRepository userRepository;
+    private final GuesthouseRepository guesthouseRepository;
+
 	
 	// 찜 추가 ( + 메세지 반환)
 	public String addWish(CustomUserDetails userDetails, CreateWishRequest request) {
@@ -57,9 +61,26 @@ public class WishService {
 		Long userId = userDetails.getId();
 		
 		List<Wish> wishes = wishRepository.findAllByUserId(userId);
+		
 		List<WishResponse> response = wishes.stream()
-                .map(w -> new WishResponse(w.getGuesthouseId(), w.getCreatedAt()))
-                .collect(Collectors.toList());				// 변환된 스트림을 다시 List<WishResponse> 형태로 모음
+	            .map(w -> {
+	                Guesthouse g = guesthouseRepository.findById(w.getGuesthouseId())
+	                        .orElseThrow(() -> new IllegalArgumentException("게스트하우스를 찾을 수 없습니다."));
+
+	                return new WishResponse(
+	                        g.getId(),
+	                        g.getName(),
+	                        g.getAddress(),
+	                        g.getRegion(),
+	                        g.getCapacity(),
+	                        g.getPrice(),
+	                        g.getDescription(),
+	                        g.getRatingAvg(),
+	                        g.getRatingCount(),
+	                        w.getCreatedAt()
+	                );
+	            })
+	            .collect(Collectors.toList());
 		
 		return response;
 	}
