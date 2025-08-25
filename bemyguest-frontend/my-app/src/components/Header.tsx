@@ -81,6 +81,7 @@ const Header: React.FC = () => {
           <button className="auth-button" onClick={goSignup}>회원가입</button>
         </div>
       )}
+
     </header>
   );
 };
