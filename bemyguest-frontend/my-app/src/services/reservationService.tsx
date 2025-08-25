@@ -12,12 +12,11 @@ export interface Booking {
 
 /**
  * 특정 사용자의 모든 예약 내역을 조회하는 API 함수
- * @param userId - 조회할 사용자의 ID
  * @returns Promise<Booking[]>
  */
-export const fetchUserBookings = async (userId: number): Promise<Booking[]> => {
+export const fetchUserBookings = async (): Promise<Booking[]> => {
   try {
-    const response = await apiClient.get<Booking[]>(`/users/${userId}/reservations`);
+    const response = await apiClient.get<Booking[]>(`/reservations/history`);
     return response.data;
   } catch (error) {
     console.error('예약 내역을 불러오는 데 실패했습니다.', error);
