@@ -42,6 +42,14 @@ const Header: React.FC = () => {
     navigate('/login'); 
   }
 
+  const goSignup = () => {
+    navigate('/signup');
+  }
+
+  const goMypage = () => {
+    navigate('/mypage');
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     alert("로그아웃 되었습니다.");
@@ -53,7 +61,6 @@ const Header: React.FC = () => {
   }
 
 
-
   return (
     <header className="header-container">
       {/* 로고 */}
@@ -62,11 +69,17 @@ const Header: React.FC = () => {
       {/* 로그인 여부에 따라, 로그인/로그아웃 버튼 */}
       {isLoggedIn ? (
       <div>
-        <span>{nickname} 님</span>
-        <button className="logout-button" onClick={handleLogout}>로그아웃</button>
+        <div className='user-header-right'>
+          <span>{nickname} 님</span>
+          <button className="auth-button" onClick={goMypage}>마이페이지</button>
+          <button className="auth-button" onClick={handleLogout}>로그아웃</button>
+        </div>
       </div>  
       ) : (
-      <button className="login-button" onClick={goLogin}>로그인</button>
+        <div className='auth-buttons'>
+          <button className="auth-button" onClick={goLogin}>로그인</button>
+          <button className="auth-button" onClick={goSignup}>회원가입</button>
+        </div>
       )}
     </header>
   );
