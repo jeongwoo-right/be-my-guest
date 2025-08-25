@@ -41,13 +41,16 @@ const MyInfoTab: React.FC = () => {
             value={user.nickname}
             onChange={(e) => setUser({ ...user, nickname: e.target.value })}
           />
+
           <input
             type="text"
             value={user.phoneNumber || ""}
             onChange={(e) => setUser({ ...user, phoneNumber: e.target.value })}
           />
+
           <button onClick={handleUpdate}>저장</button>
           <button onClick={() => setIsEditing(false)}>취소</button>
+
         </div>
       ) : (
         <div>
