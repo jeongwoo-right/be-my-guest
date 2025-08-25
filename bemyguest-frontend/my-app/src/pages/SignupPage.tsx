@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 /* 회원가입 페이지 */
 
@@ -20,6 +21,8 @@ const SignupPage: React.FC = () => {
     gender: "N", // 기본값: 선택 안함
   });
 
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -30,6 +33,8 @@ const SignupPage: React.FC = () => {
     try {
       await axios.post("http://localhost:8080/api/user/signup", form);
       alert("회원가입 성공!");
+      navigate('/');
+      
     } catch (error) {
       alert("회원가입 실패!");
       console.error(error);
