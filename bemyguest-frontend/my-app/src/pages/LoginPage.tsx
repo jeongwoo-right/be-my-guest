@@ -12,7 +12,10 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { token } = await login({ email, password });
+      const response = await login({ email, password });
+      console.log(response);
+      const { token } = response;
+      console.log(token);
       localStorage.setItem("token", token); // JWT 저장
       alert("로그인 성공!");
     } catch (err) {
