@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bemyguest.backend.user.dto.LoginRequestDto;
+import com.bemyguest.backend.user.dto.LoginResponseDto;
 import com.bemyguest.backend.user.dto.SignupRequestDto;
 import com.bemyguest.backend.user.dto.UserInfoReadResponseDto;
 import com.bemyguest.backend.user.dto.UserInfoUpdateRequestDto;
@@ -36,7 +37,7 @@ public class UserController {
     // 2. 로그인 api
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
-        String token = userService.login(loginRequestDto);
+    	LoginResponseDto token = userService.login(loginRequestDto);
         return ResponseEntity.ok(token);
     }
 
