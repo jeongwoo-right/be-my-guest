@@ -30,24 +30,8 @@
   margin-right: 10px;
 }
 
-.user-menu {
-  border: 1px solid #e0e0e0;
-  border-radius: 25px;
-  padding: 8px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px; /* 요소 간격 */
-}
-
 .menu-icon {
   margin-right: 5px;
-}
-
-.avatar {
-  width: 30px;
-  height: 30px;
-  background-color: #e0e0e0;
-  border-radius: 50%;
 }
 
 .login-button {
