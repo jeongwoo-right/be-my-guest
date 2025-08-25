@@ -14,6 +14,7 @@ import com.bemyguest.backend.review.entity.Review;
 import com.bemyguest.backend.review.repository.ReviewRepository;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
+import com.bemyguest.backend.user.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,10 +29,9 @@ public class ReviewService {
 
  // 1. 리뷰 작성
     @Transactional
-    public ReviewResponseDto createReview(long reservationId, ReviewRequestDto requestDto) {
-        User user = userRepository.findById(requestDto.getUserId())
+    public ReviewResponseDto createReview(CustomUserDetails userDetails, long reservationId, ReviewRequestDto requestDto) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 예약을 찾을 수 없습니다."));
         
@@ -57,8 +57,10 @@ public class ReviewService {
 
     // 2. 리뷰 수정
     @Transactional
-    public void updateReview(long reviewId, ReviewRequestDto requestDto) {
-        Review review = findReviewAndCheckAuthority(reviewId, requestDto.getUserId());
+    public void updateReview(CustomUserDetails userDetails, long reviewId, ReviewRequestDto requestDto) {
+    	User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    	Review review = findReviewAndCheckAuthority(reviewId, user.getId());
 
         // ★ 추가: Guesthouse 평점 갱신
         int oldRating = review.getRating();
@@ -70,8 +72,10 @@ public class ReviewService {
 
     // 3. 리뷰 삭제
     @Transactional
-    public void deleteReview(long reviewId, long userId) {
-        Review review = findReviewAndCheckAuthority(reviewId, userId);
+    public void deleteReview(long reviewId, CustomUserDetails userDetails) {
+    	User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Review review = findReviewAndCheckAuthority(reviewId, user.getId());
         
         // ★ 추가: Guesthouse 평점 갱신
         int deletedRating = review.getRating();
@@ -91,13 +95,11 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewResponseDto> getReviewsByUser(long userId) {
-        // 먼저 사용자가 존재하는지 확인하여 예외 처리
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("ID: " + userId + " 사용자를 찾을 수 없습니다.");
-        }
+    public List<ReviewResponseDto> getReviewsByUser(CustomUserDetails userDetails) {
+    	User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+        return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream()
                 .map(ReviewResponseDto::new)
                 .collect(Collectors.toList());

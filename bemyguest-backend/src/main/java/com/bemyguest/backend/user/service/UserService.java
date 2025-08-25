@@ -10,6 +10,7 @@ import com.bemyguest.backend.user.dto.UserInfoUpdateRequestDto;
 import com.bemyguest.backend.user.entity.Role;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
+import com.bemyguest.backend.user.security.CustomUserDetails;
 import com.bemyguest.backend.user.security.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -57,9 +58,10 @@ public class UserService {
     /*
      * 내 정보 조회
      */
-    public UserInfoReadResponseDto getMyInfo(String token) {
+    public UserInfoReadResponseDto getMyInfo(CustomUserDetails userDetails) {
         // 토큰에서 이메일 추출
-        String email = jwtTokenProvider.getEmail(token);
+//        String email = jwtTokenProvider.getEmail(userDetails);
+    	String email = userDetails.getUsername();
 
         // DB에서 사용자 조회
         User user = userRepository.findByEmail(email)
@@ -79,8 +81,8 @@ public class UserService {
     /*
      * 내 정보 수정
      */
-    public void updateMyInfo(String token, UserInfoUpdateRequestDto dto) {
-        String email = jwtTokenProvider.getEmail(token);
+    public void updateMyInfo(CustomUserDetails userDetails, UserInfoUpdateRequestDto dto) {
+        String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
