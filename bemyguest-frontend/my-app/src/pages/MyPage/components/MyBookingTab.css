@@ -1,0 +1,34 @@
+/* MyBookingTab.css */
+
+/* 탭 콘텐츠 전체를 감싸는 영역 */
+.my-booking-tab {
+  padding: 20px;
+  background-color: #fafafa; /* 탭 영역에 약간의 배경색 추가 */
+  border-radius: 8px;
+}
+
+/* '나의 예약 내역' 제목 */
+.my-booking-tab h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0; /* 제목 아래에 옅은 구분선 */
+}
+
+/* 예약 목록을 감싸는 영역 */
+.booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 예약 아이템 사이의 간격 */
+}
+
+/* "로딩 중..." 또는 "예약 내역 없음" 메시지 스타일 */
+.booking-list p {
+  text-align: center;
+  font-size: 16px;
+  color: #888;
+  padding: 40px 0;
+}

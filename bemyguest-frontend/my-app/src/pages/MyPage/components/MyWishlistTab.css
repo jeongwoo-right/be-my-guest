@@ -1,0 +1,17 @@
+/* MyWishlistTab.css */
+
+.my-wishlist-tab {
+  padding: 20px;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.my-wishlist-tab h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
