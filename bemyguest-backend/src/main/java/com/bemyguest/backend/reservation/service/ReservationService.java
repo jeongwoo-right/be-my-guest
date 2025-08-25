@@ -5,6 +5,7 @@ import com.bemyguest.backend.guesthouse.repository.GuesthouseRepository;
 import com.bemyguest.backend.reservation.dto.ReservationRequestDto;
 import com.bemyguest.backend.reservation.dto.ReservationResponseDto;
 import com.bemyguest.backend.reservation.entity.Reservation;
+import com.bemyguest.backend.reservation.entity.ReservationStatus;
 import com.bemyguest.backend.reservation.repository.ReservationRepository;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
@@ -12,6 +13,7 @@ import com.bemyguest.backend.user.security.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,5 +79,20 @@ public class ReservationService {
         return reservations.stream()
                 .map(ReservationResponseDto::new)
                 .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public void autoCompleteReservations() {
+        // 1. 어제 날짜를 기준으로 삼는다 (오늘이 체크아웃 다음 날이므로)
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        
+        // 2. 어제가 체크아웃 날짜이고, 상태가 'RESERVED'인 모든 예약을 조회
+        List<Reservation> targetReservations = reservationRepository
+                .findAllByCheckoutDateAndStatus(yesterday, ReservationStatus.RESERVED);
+
+        // 3. 조회된 예약들의 상태를 'COMPLETED'로 변경
+        for (Reservation reservation : targetReservations) {
+            reservation.complete();
+        }
     }
 }

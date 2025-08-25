@@ -13,13 +13,12 @@ export interface Review {
 
 /**
  * 특정 사용자가 작성한 모든 리뷰 목록을 조회하는 API 함수
- * @param userId - 조회할 사용자의 ID
  * @returns Promise<Review[]>
  */
-export const fetchUserReviews = async (userId: number): Promise<Review[]> => {
+export const fetchUserReviews = async (): Promise<Review[]> => {
   try {
     // API 명세서에 따라 경로를 '/reviews/user/{userId}' 등으로 수정해야 할 수 있습니다.
-    const response = await apiClient.get<Review[]>(`/api/review/user/${userId}`);
+    const response = await apiClient.get<Review[]>(`/review/search/user/me`);
     return response.data;
   } catch (error) {
     console.error('작성한 리뷰를 불러오는 데 실패했습니다.', error);

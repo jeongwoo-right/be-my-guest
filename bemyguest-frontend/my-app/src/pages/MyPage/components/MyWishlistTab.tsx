@@ -12,8 +12,8 @@ const MyWishlistTab: React.FC = () => {
   useEffect(() => {
     const loadWishlist = async () => {
       setIsLoading(true);
-      const userId = 1; // 사용자 ID를 1로 가정
-      const data = await fetchUserWishlist(userId);
+      const data = await fetchUserWishlist();
+      console.log('찜 목록 API 데이터:', data);
       setWishlist(data);
       setIsLoading(false);
     };
