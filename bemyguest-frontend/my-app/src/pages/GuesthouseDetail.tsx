@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import api from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
+import { BACKEND_URL } from '../services/api';
 
 /** ───────────────── Types ───────────────── */
 
@@ -298,6 +299,21 @@ export default function GuesthouseDetail() {
           </div>
         </div>
 
+
+{/* Thumbnail */}
+<div style={styles.hero}>
+  <img
+    src={`${BACKEND_URL}/thumbnail/guesthouse/${data.id}.jpg`}
+    alt={data.name}
+    style={styles.heroImg}
+    loading="lazy"
+    onError={(e) => {
+      e.currentTarget.onerror = null;
+      e.currentTarget.src = "/no-image.png"; // fallback
+    }}
+  />
+</div>
+
         <p style={{ marginTop: 16, lineHeight: 1.6 }}>{data.description}</p>
 
         {/* Facilities */}
@@ -460,6 +476,22 @@ function renderStars(n: number) {
 
 /** ───────────────── Styles ───────────────── */
 const styles: Record<string, CSSProperties> = {
+
+  hero: {
+  width: "100%",
+  height: 260,
+  borderRadius: 12,
+  overflow: "hidden",
+  background: "#eee",
+  marginTop: 16,
+},
+heroImg: {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  display: "block",
+},
+
   page: {
     minHeight: "100vh",
     display: "flex",
