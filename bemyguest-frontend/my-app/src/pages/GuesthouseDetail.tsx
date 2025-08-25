@@ -1,9 +1,73 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useParams } from "react-router-dom";
-import api from "../services/api";
+import api, { BACKEND_URL } from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
-import { BACKEND_URL } from '../services/api';
+
+/** ───────────────── Auth helpers ───────────────── */
+
+// Safely decode a base64url JWT payload
+function decodeJwtPayload(token: string): any | null {
+  try {
+    const raw = token.replace(/^Bearer\s+/i, "");
+    const payload = raw.split(".")[1];
+    if (!payload) return null;
+
+    // base64url -> base64 (+ padding)
+    let base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) base64 += "=";
+
+    const jsonStr = atob(base64);
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
+}
+
+// type CurrentUser = { id: number; name?: string } | null;
+
+// function readCurrentUser(): CurrentUser {
+//   const token = localStorage.getItem("token");
+//   if (!token) return null;
+
+//   const p = decodeJwtPayload(token);
+//   if (!p) return null;
+
+//   // Common id fields in JWTs
+//   const rawId = p.id ?? p.userId ?? p.user_id ?? p.sub;
+//   const idNum = Number(rawId);
+//   if (!Number.isFinite(idNum)) return null;
+
+//   const name = p.name ?? p.username ?? p.email ?? undefined;
+//   return { id: idNum, name };
+// }
+
+// before
+// type CurrentUser = { id: number; name?: string } | null;
+
+// after
+type CurrentUser = { id?: number; email?: string; name?: string } | null;
+
+function readCurrentUser(): CurrentUser {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const p = decodeJwtPayload(token);
+  if (!p) return null;
+
+  const rawId = p.id ?? p.userId ?? p.user_id;
+  const idNum = Number(rawId);
+  const id = Number.isFinite(idNum) ? idNum : undefined;
+
+  const sub = p.sub; // could be email or string id
+  const email = typeof sub === "string" && sub.includes("@") ? sub : undefined;
+
+  const name =
+    p.name ?? p.username ?? p.email ?? (email ? email.split("@")[0] : undefined);
+
+  return { id, email, name };
+}
+
 
 /** ───────────────── Types ───────────────── */
 
@@ -34,7 +98,6 @@ type Guesthouse = {
   price: number;
   description: string;
 
-  // booleans can be true/false/null or be missing
   wifi?: boolean | null;
   parking?: boolean | null;
   breakfast?: boolean | null;
@@ -51,13 +114,63 @@ type ReservationInput = {
   guests: number;
 };
 
-/** ───────────────── Config ───────────────── */
-const DEMO_USER = { id: 1, name: "나", isMember: true };
-
 /** ───────────────── Component ───────────────── */
 export default function GuesthouseDetail() {
   const { id } = useParams();
   const gid = id ?? ""; // for localStorage keys
+
+  // auth state (reacts to token changes)
+  // const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
+  // const isMember = !!currentUser?.id;
+const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
+const isMember = !!currentUser; // token present & decodable
+
+
+  useEffect(() => {
+    const refresh = () => setCurrentUser(readCurrentUser());
+    refresh();
+
+    // Refresh when the tab regains focus or when localStorage('token') changes (other tabs)
+    window.addEventListener("focus", refresh);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "token") refresh();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      // only run if we have a decoded user but no numeric id yet
+      if (!currentUser || currentUser.id != null) return;
+
+      // try the endpoint your backend exposes; keep the list or replace with your single route
+      const endpoints = ["/user/me"];
+      for (const url of endpoints) {
+        try {
+          const { data } = await api.get(url); // interceptor sends Bearer token
+          const id = Number(data?.id ?? data?.userId ?? data?.user_id);
+          if (!cancelled && Number.isFinite(id)) {
+            setCurrentUser((u) => (u ? { ...u, id } : u));
+            break;
+          }
+        } catch {
+          // try next endpoint
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser]);
 
   const [likeBusy, setLikeBusy] = useState(false);
   const [likedLoading, setLikedLoading] = useState(true);
@@ -66,8 +179,6 @@ export default function GuesthouseDetail() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // member / like local states
-  const [isMember, setIsMember] = useState<boolean>(DEMO_USER.isMember);
   const [liked, setLiked] = useState<boolean>(false);
 
   // reservation
@@ -95,7 +206,12 @@ export default function GuesthouseDetail() {
         const res = await api.get<Guesthouse>(`/guesthouses/${id}`);
         setData(res.data);
       } catch (e: any) {
-        setError(e?.message ?? "Failed to load");
+        const msg =
+          e?.response?.data?.message ||
+          e?.response?.data?.error ||
+          e?.message ||
+          "Failed to load";
+        setError(msg);
       } finally {
         setLoading(false);
       }
@@ -107,16 +223,17 @@ export default function GuesthouseDetail() {
     const run = async () => {
       setLikedLoading(true);
       try {
-        if (!id || !isMember) {
+        if (!id || !isMember || !currentUser?.id) {
           setLiked(false);
           return;
         }
-        const list = await getWishList(DEMO_USER.id);
+        const list = await getWishList(currentUser.id); // interceptor adds Bearer token
         const currentId = Number(id);
         const has = list.some((w) => w.guesthouseId === currentId);
         setLiked(has);
         localStorage.setItem(`gh:${id}:liked`, has ? "1" : "0");
       } catch {
+        // Offline / server error: fall back to last local state
         const lk = localStorage.getItem(`gh:${id}:liked`);
         if (lk) setLiked(lk === "1");
       } finally {
@@ -124,9 +241,9 @@ export default function GuesthouseDetail() {
       }
     };
     run();
-  }, [id, isMember]);
+  }, [id, isMember, currentUser?.id]);
 
-  /** Persist liked */
+  /** Persist liked locally as a cache */
   useEffect(() => {
     if (!gid) return;
     localStorage.setItem(`gh:${gid}:liked`, liked ? "1" : "0");
@@ -160,12 +277,12 @@ export default function GuesthouseDetail() {
   const toggleLike = async () => {
     if (!data || likeBusy) return;
 
-    if (!isMember) {
-      alert("회원만 이용 가능합니다.");
+    if (!isMember || !currentUser?.id) {
+      alert("회원만 이용 가능합니다. 로그인 후 이용해주세요.");
       return;
     }
 
-    const userId = DEMO_USER.id; // TODO: 실제 로그인 사용자 ID로 교체
+    const userId = currentUser.id;
     const guesthouseId = data?.id ?? Number(id);
     if (!Number.isFinite(guesthouseId)) return;
 
@@ -180,10 +297,15 @@ export default function GuesthouseDetail() {
         await removeWish(userId, guesthouseId);
       }
       localStorage.setItem(`gh:${guesthouseId}:liked`, next ? "1" : "0");
-    } catch (e) {
+    } catch (e: any) {
       console.error("[wish] toggle failed", e);
       setLiked(!next);
-      alert("찜 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      const status = e?.response?.status;
+      if (status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      } else {
+        alert("찜 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
     } finally {
       setLikeBusy(false);
     }
@@ -202,8 +324,8 @@ export default function GuesthouseDetail() {
       setReserveMsg("체크아웃 날짜는 체크인보다 뒤여야 합니다.");
       return;
     }
-    if (!isMember) {
-      setReserveMsg("회원만 예약할 수 있습니다.");
+    if (!isMember || !currentUser?.id) {
+      setReserveMsg("회원만 예약할 수 있습니다. 로그인해주세요.");
       return;
     }
     if (reserveForm.guests > (data?.capacity ?? 1)) {
@@ -211,9 +333,10 @@ export default function GuesthouseDetail() {
       return;
     }
 
+    setReserving(true);
     try {
       const payload: ReservationRequest = {
-        userId: 1, // TODO: 로그인 연동 시 실제 사용자 ID 사용
+        userId: currentUser.id,
         guesthouseId: Number(id),
         checkinDate: reserveForm.checkIn,
         checkoutDate: reserveForm.checkOut,
@@ -242,8 +365,11 @@ export default function GuesthouseDetail() {
         msg = "요청 형식이 서버와 일치하지 않습니다. (필드명/날짜형식 확인)";
       }
       if (status === 403) msg = "권한이 없습니다. (로그인이 필요할 수 있어요)";
+      if (status === 401) msg = "로그인이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.";
 
       setReserveMsg(msg);
+    } finally {
+      setReserving(false);
     }
   };
 
@@ -299,20 +425,19 @@ export default function GuesthouseDetail() {
           </div>
         </div>
 
-
-{/* Thumbnail */}
-<div style={styles.hero}>
-  <img
-    src={`${BACKEND_URL}/thumbnail/guesthouse/${data.id}.jpg`}
-    alt={data.name}
-    style={styles.heroImg}
-    loading="lazy"
-    onError={(e) => {
-      e.currentTarget.onerror = null;
-      e.currentTarget.src = "/no-image.png"; // fallback
-    }}
-  />
-</div>
+        {/* Thumbnail */}
+        <div style={styles.hero}>
+          <img
+            src={`${BACKEND_URL}/thumbnail/guesthouse/${data.id}.jpg`}
+            alt={data.name}
+            style={styles.heroImg}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/no-image.png"; // fallback
+            }}
+          />
+        </div>
 
         <p style={{ marginTop: 16, lineHeight: 1.6 }}>{data.description}</p>
 
@@ -359,16 +484,13 @@ export default function GuesthouseDetail() {
           </div>
         )}
 
-        {/* Dev-only membership toggle (remove when auth 붙이면 됨) */}
+        {/* (Dev) show login state */}
         <div style={{ marginTop: 24, color: "#777" }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={isMember}
-              onChange={(e) => setIsMember(e.target.checked)}
-            />{" "}
-            테스트용: 회원 상태로 보기
-          </label>
+          {isMember ? (
+            <span>로그인 상태입니다{currentUser?.name ? `: ${currentUser.name}` : ""}.</span>
+          ) : (
+            <span>로그인하지 않은 상태입니다.</span>
+          )}
         </div>
       </div>
 
@@ -476,21 +598,20 @@ function renderStars(n: number) {
 
 /** ───────────────── Styles ───────────────── */
 const styles: Record<string, CSSProperties> = {
-
   hero: {
-  width: "100%",
-  height: 260,
-  borderRadius: 12,
-  overflow: "hidden",
-  background: "#eee",
-  marginTop: 16,
-},
-heroImg: {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  display: "block",
-},
+    width: "100%",
+    height: 260,
+    borderRadius: 12,
+    overflow: "hidden",
+    background: "#eee",
+    marginTop: 16,
+  },
+  heroImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
 
   page: {
     minHeight: "100vh",

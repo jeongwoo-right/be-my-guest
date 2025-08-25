@@ -4,69 +4,78 @@ import { useNavigate } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [nickname, setNickname] = useState<string | null>(null);
 
-  const token = localStorage.getItem("token"); // 로그인 상태 여부 확인
-  const isLoggedIn = !!token;                  // boolean type으로 변환
+  // Initialize from localStorage so it persists across reloads
+  const [nickname, setNickname] = useState<string | null>(() => localStorage.getItem('nickname'));
 
+  const token = localStorage.getItem('token');
+  const isLoggedIn = !!token;
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      if(!token) return;
+    // If there’s no token, clear nickname and stop
+    if (!token) {
+      setNickname(null);
+      localStorage.removeItem('nickname');
+      return;
+    }
 
+    let ignore = false;
+
+    const fetchUserInfo = async () => {
       try {
-        const res = await fetch("api/user/me", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        // Important: absolute path so it works from any route
+        const res = await fetch('/api/user/me', {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) throw new Error("사용자 정보 불러오기 실패");
+        if (!res.ok) throw new Error('Failed to load user info');
 
         const data = await res.json();
-
-        setNickname(data.nickname);
-
-      } catch(err) {
-        console.log(err);
+        if (!ignore) {
+          const nextNickname = data?.nickname ?? null;
+          setNickname(nextNickname);
+          if (nextNickname) {
+            localStorage.setItem('nickname', nextNickname);
+          } else {
+            localStorage.removeItem('nickname');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        // Optionally handle 401 here (e.g., remove token, redirect)
       }
     };
 
-
-    // 함수 실행
-    fetchUserInfo(); 
+    fetchUserInfo();
+    return () => {
+      ignore = true;
+    };
   }, [token]);
 
-
-  const goLogin = () => {
-    navigate('/login'); 
-  }
+  const goLogin = () => navigate('/login');
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    alert("로그아웃 되었습니다.");
-    navigate('/');
-  }
+    localStorage.removeItem('token');
+    localStorage.removeItem('nickname'); // keep things in sync
+    alert('You have been logged out.');
+    navigate('/login');
+  };
 
-  const goToMainPage = () => {
-    navigate('/');
-  }
-
-
+  const goToMainPage = () => navigate('/');
 
   return (
     <header className="header-container">
-      {/* 로고 */}
-      <div className="logo" onClick = {goToMainPage}>BeMyGuest</div>
+      {/* Logo */}
+      <div className="logo" onClick={goToMainPage}>BeMyGuest</div>
 
-      {/* 로그인 여부에 따라, 로그인/로그아웃 버튼 */}
+      {/* Auth section */}
       {isLoggedIn ? (
-      <div>
-        <span>{nickname} 님</span>
-        <button className="logout-button" onClick={handleLogout}>로그아웃</button>
-      </div>  
+        <div>
+          <span>{nickname ? `${nickname} 님` : '…'}</span>
+          <button className="logout-button" onClick={handleLogout}>로그아웃</button>
+        </div>
       ) : (
-      <button className="login-button" onClick={goLogin}>로그인</button>
+        <button className="login-button" onClick={goLogin}>로그인</button>
       )}
     </header>
   );
