@@ -195,10 +195,10 @@ function CalendarDayButton({
       data-range-middle={modifiers.range_middle}
       className={cn(
         "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal",
-        "data-[selected-single=true]:bg-slate-900 data-[selected-single=true]:text-white",
-        "data-[range-start=true]:bg-slate-900 data-[range-start=true]:text-white data-[range-start=true]",
-        "data-[range-end=true]:bg-slate-900 data-[range-end=true]:text-white data-[range-end=true]",
-        "data-[range-middle=true]:bg-slate-200 data-[range-middle=true]:text-slate-900 data-[range-middle=true]:rounded-none",
+        "data-[selected-single=true]:bg-brand-600 data-[selected-single=true]:text-white",
+        "data-[range-start=true]:bg-brand-600 data-[range-start=true]:text-white data-[range-start=true]",
+        "data-[range-end=true]:bg-brand-600 data-[range-end=true]:text-white data-[range-end=true]",
+        "data-[range-middle=true]:bg-brand-50 data-[range-middle=true]:text-slate-900 data-[range-middle=true]:rounded-none",
         "[&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className

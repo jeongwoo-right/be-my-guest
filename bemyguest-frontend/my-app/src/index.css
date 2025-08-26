@@ -7,6 +7,19 @@
   --font-sans: "Noto Sans KR", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo",
     "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  --color-brand-50: #e3f2fd;
+  --color-brand-100: #bbdefb;
+  --color-brand-200: #90caf9;
+  --color-brand-300: #64b5f6;
+  --color-brand-400: #42a5f5;
+  --color-brand-500: #2196f3; /* 메인 라이트 */
+  --color-brand-600: #1e88e5; /* 메인(버튼/포커스) */
+  --color-brand-700: #1976d2; /* hover */
+  --color-brand-800: #1565c0;
+  --color-brand-900: #0d47a1;
+
+  --color-brand-50a: color-mix(in oklab, var(--color-brand-600) 10%, white);
 }
 
 /* 전역 베이스 */
@@ -25,10 +38,10 @@
 @layer base {
   .rdp-day_range_start,
   .rdp-day_range_end {
-    @apply bg-slate-900 text-white;
+    @apply bg-brand-600 text-white;
   }
 
   .rdp-day_range_middle {
-    @apply bg-slate-200 text-slate-900;
+    @apply bg-brand-50 text-slate-900;
   }
 }

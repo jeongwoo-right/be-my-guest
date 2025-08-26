@@ -69,8 +69,9 @@
 
 .form-input:focus,
 .form-select:focus {
-  border-color: #b3d4ff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+  border-color: var(--color-brand-300);
+  box-shadow: 0 0 0 3px
+    color-mix(in oklab, var(--color-brand-600) 12%, transparent);
 }
 
 /* 액션 영역: 오른쪽 정렬(기존 탭과 통일) */
@@ -88,13 +89,13 @@
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  background-color: #0a7;
+  background-color: var(--color-brand-600);
   color: #fff;
   transition: background-color 0.2s;
 }
 
 .primary-button:hover:not(:disabled) {
-  background-color: #086;
+  background-color: var(--color-brand-700);
 }
 
 .primary-button:disabled {
