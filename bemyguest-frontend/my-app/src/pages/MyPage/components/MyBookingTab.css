@@ -6,7 +6,6 @@
   background-color: #fff;
 }
 
-/* '나의 예약 현황' 제목 */
 .my-booking-tab h2 {
   font-size: 22px;
   font-weight: 600;
@@ -15,86 +14,82 @@
   margin-bottom: 24px;
 }
 
-/* 테이블을 감싸는 컨테이너 */
-.booking-table-container {
+.my-booking-tab .booking-table-container {
   border-top: 2px solid #333;
   width: 100%;
 }
 
-/* 테이블 기본 스타일 */
-table {
+/* 🌟 모든 table 관련 선택자 앞에 .my-booking-tab 추가 */
+.my-booking-tab table {
   width: 100%;
-  border-collapse: collapse; /* 테두리 사이의 간격을 없애 표를 깔끔하게 만듦 */
+  border-collapse: collapse;
   text-align: center;
   font-size: 15px;
 }
 
-/* 테이블 헤더(thead) 스타일 */
-thead {
+.my-booking-tab thead {
   background-color: #f9f9f9;
   color: #555;
 }
 
-/* 테이블 헤더(th)와 데이터 셀(td) 공통 스타일 */
-th, td {
+.my-booking-tab th, 
+.my-booking-tab td {
   padding: 16px 12px;
   border-bottom: 1px solid #e0e0e0;
-  vertical-align: middle; /* 내용물을 세로 중앙 정렬 */
-  border-right: 1px solid #e0e0e0; /* 오른쪽에 구분선 추가 */
+  vertical-align: middle;
+  border-right: 1px solid #e0e0e0;
   height: 68px;
 }
 
-th {
+.my-booking-tab th {
   font-weight: 500;
 }
 
-/* 테이블 바디(tbody)의 행에 마우스를 올렸을 때 */
-tbody tr:hover {
+.my-booking-tab tbody tr:hover {
   background-color: #f5f5f5;
 }
 
 /* --- 상태(status)별 텍스트 색상 --- */
-.status-completed{
+.my-booking-tab .status-completed {
   color: #0aa82a;
   font-weight: 500;
 }
 
-.status-reserved {
-  color: #d32f2f; /* 빨간색 계열 */
+.my-booking-tab .status-reserved {
+  color: #d32f2f;
   font-weight: 500;
 }
 
-.status-cancelled {
+.my-booking-tab .status-cancelled {
   color: #555;
   font-weight: 500;
 }
 
 /* --- 기타 스타일 --- */
 
-/* "로딩 중..." 또는 "예약 내역 없음" 메시지 */
-.loading-text,
-.no-results {
+.my-booking-tab .loading-text,
+.my-booking-tab .no-results {
   text-align: center;
   font-size: 16px;
   color: #888;
   padding: 50px 0;
 }
 
-/* 시설명 링크 스타일 */
-td a {
+.my-booking-tab td a {
   color: #333;
   text-decoration: none;
 }
-td a:hover {
+.my-booking-tab td a:hover {
   text-decoration: underline;
 }
 
-th:last-child, td:last-child {
+.my-booking-tab th:last-child, 
+.my-booking-tab td:last-child {
   border-right: none;
 }
 
 /* '관리' 컬럼의 버튼 공통 스타일 */
-.action-button {
+.my-booking-tab .action-button {
   padding: 6px 12px;
   border: 1px solid;
   border-radius: 6px;
@@ -106,21 +101,21 @@ th:last-child, td:last-child {
 }
 
 /* 리뷰 쓰기 버튼 스타일 */
-.action-button.review {
+.my-booking-tab .action-button.review {
   border-color: #007bff;
   color: #007bff;
 }
-.action-button.review:hover {
+.my-booking-tab .action-button.review:hover {
   background-color: #007bff;
   color: #fff;
 }
 
 /* 예약 취소 버튼 스타일 */
-.action-button.cancel {
+.my-booking-tab .action-button.cancel {
   border-color: #d32f2f;
   color: #d32f2f;
 }
-.action-button.cancel:hover {
+.my-booking-tab .action-button.cancel:hover {
   background-color: #d32f2f;
   color: #fff;
 }
