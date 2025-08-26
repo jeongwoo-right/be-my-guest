@@ -8,7 +8,6 @@ import './MyBookingTab.css';
 const MyBookingTab: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -47,21 +46,14 @@ const MyBookingTab: React.FC = () => {
   };
 
   // 예약 취소 버튼 클릭 핸들러
-  const handleCancelBooking = async () => {
-    if (selectedBookingId === null) {
-      alert('취소할 예약을 선택해주세요.');
-      return;
-    }
-    
-    if (window.confirm('선택한 예약을 정말로 취소하시겠습니까?')) {
+  const handleCancelBooking = async (reservationId: number) => {
+    if (window.confirm('해당 예약을 정말로 취소하시겠습니까?')) {
       try {
-        await cancelBooking(selectedBookingId);
+        await cancelBooking(reservationId);
         alert('예약이 성공적으로 취소되었습니다.');
-        setSelectedBookingId(null); // 선택 상태 초기화
         loadBookings(); // 목록 새로고침
       } catch (error) {
-        // 백엔드에서 보낸 에러 메시지를 보여주면 더 좋습니다.
-        alert('예약 취소 중 오류가 발생했습니다.');
+        alert('예약 취소 중 오류가 발생했습니다. 이미 취소되었거나 이용완료된 예약인지 확인해주세요.');
       }
     }
   };
@@ -87,7 +79,6 @@ const MyBookingTab: React.FC = () => {
           <table>
             <thead>
               <tr>
-                <th>선택</th>
                 <th>시설명</th>
                 <th>예약일시</th>
                 <th>상태</th>
@@ -101,17 +92,6 @@ const MyBookingTab: React.FC = () => {
                   return (
                     <tr key={booking.reservationId}>
                       <td>
-                        <input
-                          type="radio"
-                          name="booking-selection"
-                          value={booking.reservationId}
-                          checked={selectedBookingId === booking.reservationId}
-                          onChange={() => setSelectedBookingId(booking.reservationId)}
-                          // 예약됨 상태가 아니면 비활성화
-                          disabled={booking.status !== 'RESERVED'}
-                        />
-                      </td>
-                      <td>
                         <a href={`/guesthouses/${booking.guesthouseId}`} target="_blank" rel="noopener noreferrer">
                           {booking.guesthouseName}
                         </a>
@@ -119,16 +99,24 @@ const MyBookingTab: React.FC = () => {
                       <td>{booking.checkinDate} ~ {booking.checkoutDate}</td>
                       <td className={statusInfo.className}>{statusInfo.text}</td>
                       <td>
-                  {/* 🌟 렌더링 조건에 !booking.reviewWritten 추가 */}
-                  {booking.status === 'COMPLETED' && !booking.reviewWritten && (
-                    <button 
-                      className="action-button"
-                      onClick={() => handleOpenReviewModal(booking)}
-                    >
-                      리뷰 쓰기
-                    </button>
-                  )}
-                </td>
+                        {/* 🌟 5. 상태에 따라 다른 버튼을 보여주는 로직 */}
+                        {booking.status === 'COMPLETED' && !booking.reviewWritten && (
+                          <button 
+                            className="action-button review"
+                            onClick={() => handleOpenReviewModal(booking)}
+                          >
+                            리뷰 쓰기
+                          </button>
+                        )}
+                        {booking.status === 'RESERVED' && (
+                          <button 
+                            className="action-button cancel"
+                            onClick={() => handleCancelBooking(booking.reservationId)}
+                          >
+                            예약 취소
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })
@@ -141,15 +129,7 @@ const MyBookingTab: React.FC = () => {
           </table>
         )}
       </div>
-      
-      <div className="tab-actions">
-        <button 
-          onClick={handleCancelBooking} 
-          disabled={selectedBookingId === null}
-        >
-          예약 취소
-        </button>
-      </div>
+    
 
       {selectedBooking && (
         <ReviewModal
