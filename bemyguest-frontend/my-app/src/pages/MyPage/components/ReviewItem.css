@@ -77,6 +77,7 @@
   margin: 0px 0;
   white-space: pre-wrap;
   text-align: center; /* 리뷰 내용 가운데 정렬 */
+  padding: 0 !important;
 }
 
 .review-actions {
