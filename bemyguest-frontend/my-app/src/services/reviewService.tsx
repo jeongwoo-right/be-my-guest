@@ -6,9 +6,11 @@ export interface Review {
   reviewId: number;
   authorNickname: string;
   guesthouseName: string; // 리뷰에 대한 숙소 이름을 DTO에 포함하는 것이 좋습니다.
+  guesthouseId: number;
   rating: number;
   content: string;
   createdAt: string; // ISO 8601 형식의 날짜 문자열 (예: "2025-08-25T13:30:00")
+  updatedAt: string;
 }
 
 /**
@@ -23,5 +25,35 @@ export const fetchUserReviews = async (): Promise<Review[]> => {
   } catch (error) {
     console.error('작성한 리뷰를 불러오는 데 실패했습니다.', error);
     return [];
+  }
+};
+
+// [신규] 리뷰 수정을 위한 데이터 타입
+export interface ReviewUpdateRequest {
+  rating: number;
+  content: string;
+}
+
+/**
+ * [신규] 특정 리뷰를 수정하는 API 함수
+ */
+export const updateReview = async (reviewId: number, reviewData: ReviewUpdateRequest): Promise<void> => {
+  try {
+    await apiClient.put(`/review/edit/${reviewId}`, reviewData);
+  } catch (error) {
+    console.error('리뷰 수정에 실패했습니다.', error);
+    throw error;
+  }
+};
+
+/**
+ * [신규] 특정 리뷰를 삭제하는 API 함수
+ */
+export const deleteReview = async (reviewId: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/review/edit/${reviewId}`);
+  } catch (error) {
+    console.error('리뷰 삭제에 실패했습니다.', error);
+    throw error;
   }
 };
