@@ -1,5 +1,6 @@
 package com.bemyguest.backend.guesthouse.controller;
 
+import com.bemyguest.backend.docs.GuesthouseApiDocs;
 import com.bemyguest.backend.guesthouse.dto.GuesthouseDetailDto;
 import com.bemyguest.backend.guesthouse.service.GuesthouseService;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/guesthouses")
 @RequiredArgsConstructor
-public class GuesthouseController {
+public class GuesthouseController implements GuesthouseApiDocs {
 
     private final GuesthouseService guesthouseService;
 

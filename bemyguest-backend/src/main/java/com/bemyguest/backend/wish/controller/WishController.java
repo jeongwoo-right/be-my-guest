@@ -1,5 +1,6 @@
 package com.bemyguest.backend.wish.controller;
 
+import com.bemyguest.backend.docs.WishApiDocs;
 import com.bemyguest.backend.user.security.CustomUserDetails;
 import com.bemyguest.backend.wish.dto.ApiResponse;
 import com.bemyguest.backend.wish.dto.CreateWishRequest;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping("/api/wish")
-public class WishController {
+public class WishController implements WishApiDocs {
 
     private final WishService wishService;
 

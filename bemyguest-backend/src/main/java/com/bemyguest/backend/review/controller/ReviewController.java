@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import com.bemyguest.backend.docs.ReviewApiDocs;
 import com.bemyguest.backend.review.dto.ReviewRequestDto;
 import com.bemyguest.backend.review.dto.ReviewResponseDto;
 import com.bemyguest.backend.review.service.ReviewService;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/review")
-public class ReviewController {
+public class ReviewController implements ReviewApiDocs {
 
     private final ReviewService reviewService;
 
