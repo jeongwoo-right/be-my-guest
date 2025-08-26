@@ -1,68 +1,34 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ✅ Tailwind v4 스타일 */
+@import "tailwindcss";
+@reference "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* 전역 테마(선택) — 폰트 지정 */
+@theme {
+  --font-sans: "Noto Sans KR", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo",
+    "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* 전역 베이스 */
+@layer base {
+  html {
+    @apply font-sans antialiased;
   }
-  a:hover {
-    color: #747bff;
+  body {
+    @apply m-0 bg-white text-slate-800;
   }
-  button {
-    background-color: #f9f9f9;
+  a {
+    @apply text-slate-700 hover:text-slate-900;
+  }
+}
+
+@layer base {
+  .rdp-day_range_start,
+  .rdp-day_range_end {
+    @apply bg-slate-900 text-white;
+  }
+
+  .rdp-day_range_middle {
+    @apply bg-slate-200 text-slate-900;
   }
 }

@@ -1,103 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
-// API 서비스와 타입 import
-import { searchGuesthouses } from '../services/guesthouseService';
-import type { Guesthouse, GuesthouseSearchRequest } from '../services/guesthouseService';
+import { searchGuesthouses } from "../services/guesthouseService";
+import type {
+  Guesthouse,
+  GuesthouseSearchRequest,
+} from "../services/guesthouseService";
 
-// 자식 컴포넌트들 import
-import SearchBar from '../components/SearchBar';
-import GuesthouseList from '../components/GuesthouseList';
-import Pagination from '../components/Pagination';
-
-// 페이지 전용 CSS import
-import './GuesthouseListPage.css';
+import SearchBar from "../components/SearchBar";
+import GuesthouseList from "../components/GuesthouseList";
+import Pagination from "../components/Pagination";
 
 const GuesthouseListPage: React.FC = () => {
-  // --- 상태 관리 (State) ---
   const [guesthouses, setGuesthouses] = useState<Guesthouse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 🌟 1. 정렬 기준과 방향을 위한 상태 추가
-  const [sort, setSort] = useState<'rating' | 'price' | 'name'>('rating');
-  const [dir, setDir] = useState<'asc' | 'desc'>('desc');
+  const [sort, setSort] = useState<"rating" | "price" | "name">("rating");
+  const [dir, setDir] = useState<"asc" | "desc">("desc");
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // --- 데이터 로딩 (Effect) ---
-  // 🌟 2. useEffect의 의존성 배열에 sort와 dir 추가
+  // ✅ 쿼리값은 렌더 스코프에서 파싱 (JSX에서도 사용 가능)
+  const region = searchParams.get("region") || "";
+
+  const startDateParam =
+    searchParams.get("startDate") || searchParams.get("start") || "";
+  const endDateParam =
+    searchParams.get("endDate") || searchParams.get("end") || "";
+
+  const rawGuests = searchParams.get("guests");
+  const guestsParam = (() => {
+    if (rawGuests == null) return 1;
+    const g = Number(String(rawGuests).trim());
+    return Number.isFinite(g) && g >= 1 ? g : 1;
+  })();
+
   useEffect(() => {
-    // ... (URL에서 파라미터 가져오는 로직은 그대로) ...
-    const region = searchParams.get('region');
-    // ...
-    
-    if (region) { // 검색 조건이 있을 때만 실행
-      const loadGuesthouses = async () => {
-        setIsLoading(true);
+    // URL에서 sort/dir 싱크
+    const sortParam =
+      (searchParams.get("sort") as "rating" | "price" | "name") || undefined;
+    const dirParam = (searchParams.get("dir") as "asc" | "desc") || undefined;
+    if (sortParam && sortParam !== sort) setSort(sortParam);
+    if (dirParam && dirParam !== dir) setDir(dirParam);
 
-        // 🌟 3. API 요청 객체에 sort와 dir 상태값 포함
-        const searchRequest: GuesthouseSearchRequest = {
-          region: region,
-          startDate: searchParams.get('startDate') || '',
-          endDate: searchParams.get('endDate') || '',
-          guests: Number(searchParams.get('guests')) || 1,
-          page: currentPage - 1,
-          size: 10,
-          sort: sort, // 상태값 사용
-          dir: dir,   // 상태값 사용
-        };
+    if (!region) return;
 
-        const response = await searchGuesthouses(searchRequest);
-        setGuesthouses(response.content);
-        setTotalPages(response.totalPages);
-        setIsLoading(false);
+    const loadGuesthouses = async () => {
+      setIsLoading(true);
+
+      const searchRequest: GuesthouseSearchRequest = {
+        region,
+        startDate: startDateParam,
+        endDate: endDateParam,
+        guests: guestsParam,
+        page: currentPage - 1,
+        size: 10,
+        sort,
+        dir,
       };
 
-      loadGuesthouses();
-    }
-  }, [searchParams, currentPage, sort, dir]); // 의존성 배열에 추가
+      const response = await searchGuesthouses(searchRequest);
+      setGuesthouses(response.content);
+      setTotalPages(response.totalPages);
+      setIsLoading(false);
+    };
 
-  // --- 이벤트 핸들러 ---
+    loadGuesthouses();
+    // region/start/end/guests가 바뀌면 재조회
+  }, [
+    searchParams,
+    region,
+    startDateParam,
+    endDateParam,
+    guestsParam,
+    currentPage,
+    sort,
+    dir,
+  ]);
 
-  // SearchBar 컴포넌트에서 '검색' 버튼을 눌렀을 때 실행될 함수
-  const handleSearch = (criteria: { region: string; startDate: string; endDate: string; guests: string }) => {
-    // 검색 조건으로 URL의 쿼리 파라미터를 업데이트
-    // 이 업데이트가 발생하면 위의 useEffect가 자동으로 다시 실행됨
+  const handleSearch = (criteria: {
+    region: string;
+    startDate: string;
+    endDate: string;
+    guests: string;
+  }) => {
     setSearchParams({
       region: criteria.region,
       startDate: criteria.startDate,
       endDate: criteria.endDate,
       guests: String(criteria.guests),
+      sort,
+      dir,
     });
-    // 새로운 검색이므로 1페이지로 리셋
     setCurrentPage(1);
   };
 
-  // Pagination 컴포넌트에서 페이지 번호를 클릭했을 때 실행될 함수
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      // 페이지 스크롤을 맨 위로 올리는 사용자 경험 개선 코드
       window.scrollTo(0, 0);
     }
   };
 
-  // --- 렌더링 (Return JSX) ---
   return (
-    <div className="guesthouse-list-container">
-      {/* 검색 바 컴포넌트 */}
-      <SearchBar onSearch={handleSearch} />
+    <section className="mx-auto max-w-5xl px-5 pt-10">
+      <div className="flex justify-center">
+        <SearchBar
+          onSearch={handleSearch}
+          initial={{
+            region: region || undefined,
+            startDate: startDateParam || undefined,
+            endDate: endDateParam || undefined,
+            guests: guestsParam,
+          }}
+        />
+      </div>
 
-      {/* 🌟 4. 정렬 컨트롤 UI 추가 */}
-      <div className="sort-controls">
-        <select value={sort} onChange={(e) => setSort(e.target.value as any)}>
+      <div className="mt-6 mb-3 flex items-center gap-2 justify-end text-sm">
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as any)}
+          className="h-9 rounded-lg border border-slate-300 px-2"
+        >
           <option value="rating">평점순</option>
           <option value="price">가격순</option>
           <option value="name">이름순</option>
         </select>
-        <select value={dir} onChange={(e) => setDir(e.target.value as any)}>
+        <select
+          value={dir}
+          onChange={(e) => setDir(e.target.value as any)}
+          className="h-9 rounded-lg border border-slate-300 px-2"
+        >
           <option value="desc">내림차순</option>
           <option value="asc">오름차순</option>
         </select>
@@ -105,7 +140,6 @@ const GuesthouseListPage: React.FC = () => {
 
       <GuesthouseList guesthouses={guesthouses} isLoading={isLoading} />
 
-      {/* 페이지네이션 컴포넌트 (결과가 있을 때만 표시) */}
       {totalPages > 0 && (
         <Pagination
           currentPage={currentPage}
@@ -113,7 +147,7 @@ const GuesthouseListPage: React.FC = () => {
           onPageChange={handlePageChange}
         />
       )}
-    </div>
+    </section>
   );
 };
 
