@@ -38,10 +38,10 @@ const MyInfoTab: React.FC = () => {
         const data = res.data;
         setEmail(data.email);
         setNickname(data.nickname ?? "");
-        setPhone((data.phone ?? data.phoneNumber) ?? "");
+        setPhone(data.phone ?? data.phoneNumber ?? "");
         setGender((data.gender as Gender) ?? "N");
       } catch {
-        // 조용히 실패 처리(헤더에서 이미 로그인 상태를 표기하므로 별도 알림 불필요)
+        // 조용히 실패 처리
       }
     })();
   }, [token]);
@@ -72,67 +72,68 @@ const MyInfoTab: React.FC = () => {
   };
 
   return (
-    <div className="my-info-tab">
-      <h2>내 정보</h2>
+    <div className="my-page-tab-container">
+      <h2 className="my-page-tab-title">내 정보</h2>
+      <div className="my-page-tab-content">
+        <div className="info-form">
+          <div className="form-group">
+            <label>이메일</label>
+            <div className="readonly-box">{email || "-"}</div>
+          </div>
 
-      <div className="info-form">
-        <div className="form-group">
-          <label>이메일</label>
-          <div className="readonly-box">{email || "-"}</div>
+          <div className="form-group">
+            <label htmlFor="nickname">닉네임</label>
+            <input
+              id="nickname"
+              className="form-input"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="닉네임을 입력하세요"
+              maxLength={30}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">전화번호</label>
+            <input
+              id="phone"
+              className="form-input"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="010-0000-0000"
+              inputMode="tel"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gender">성별</label>
+            <select
+              id="gender"
+              className="form-select"
+              value={gender}
+              onChange={(e) => setGender(e.target.value as Gender)}
+            >
+              <option value="M">M</option>
+              <option value="F">F</option>
+              <option value="N">N</option>
+            </select>
+          </div>
+
+          <div className="form-actions">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="primary-button"
+            >
+              {saving ? "저장 중..." : "수정하기"}
+            </button>
+          </div>
+
+          {saveError && <p className="feedback error">{saveError}</p>}
+          {saveSuccess && <p className="feedback success">{saveSuccess}</p>}
         </div>
-
-        <div className="form-group">
-          <label htmlFor="nickname">닉네임</label>
-          <input
-            id="nickname"
-            className="form-input"
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="닉네임을 입력하세요"
-            maxLength={30}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="phone">전화번호</label>
-          <input
-            id="phone"
-            className="form-input"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="010-0000-0000"
-            inputMode="tel"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="gender">성별</label>
-          <select
-            id="gender"
-            className="form-select"
-            value={gender}
-            onChange={(e) => setGender(e.target.value as Gender)}
-          >
-            <option value="M">M</option>
-            <option value="F">F</option>
-            <option value="N">N</option>
-          </select>
-        </div>
-
-        <div className="form-actions">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="primary-button"
-          >
-            {saving ? "저장 중..." : "수정하기"}
-          </button>
-        </div>
-
-        {saveError && <p className="feedback error">{saveError}</p>}
-        {saveSuccess && <p className="feedback success">{saveSuccess}</p>}
       </div>
     </div>
   );

@@ -42,7 +42,14 @@ const ReviewItem: React.FC<ReviewItemProps> = ({ review, onEdit, onDelete }) => 
             className="review-thumbnail"
           />
           <div className="review-header-text">
-            <h3 className="guesthouse-name">{review.guesthouseName}</h3>
+            <a 
+              href={`/guesthouses/${review.guesthouseId}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="guesthouse-name-link"
+            >
+              <h3 className="guesthouse-name">{review.guesthouseName}</h3>
+            </a>
             <div className="review-rating">
               <StarRating rating={review.rating} />
               <span className="rating-text">{review.rating.toFixed(1)}</span>

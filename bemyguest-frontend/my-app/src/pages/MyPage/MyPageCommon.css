@@ -1,0 +1,29 @@
+/* =============================================== */
+/* ======== 마이페이지 탭 공통 스타일 ======== */
+/* =============================================== */
+
+/* 1. 탭 전체를 감싸는 컨테이너 */
+.my-page-tab-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 콘텐츠를 가로 중앙 정렬 */
+  background-color: #fff; /* 배경색 통일 */
+}
+
+/* 2. '내 정보', '나의 예약 현황' 등 탭 제목 */
+h2.my-page-tab-title {
+  width: 100%;
+  /* 모든 콘텐츠 타입을 아우를 수 있는 적절한 최대 너비 설정 (예: 960px) */
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 24px 0; /* 위쪽 마진 제거 */
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* 3. 제목 아래 실제 콘텐츠 영역 */
+.my-page-tab-content {
+  width: 100%;
+}

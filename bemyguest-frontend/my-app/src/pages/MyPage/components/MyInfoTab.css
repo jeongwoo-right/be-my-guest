@@ -1,29 +1,7 @@
-/* MyInfoTab.css */
-
-/* 배경 회색 제거 + 가로 가운데 정렬 */
-.my-info-tab {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 제목: 기존 톤 유지 (구분선 포함) */
-.my-info-tab h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
-  width: 100%;
-  max-width: 560px; /* 구분선 길이도 폼 폭에 맞춤 */
-}
-
-/* 폼 컨테이너: 가운데 배치 + 폭 제한 */
+/* 폼 컨테이너: 최대 너비는 공통 스타일에서 제어 */
 .info-form {
-  max-width: 560px;
   width: 100%;
+  max-width: 560px; /* 폼 콘텐츠의 최대 너비는 유지 */
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
@@ -74,14 +52,14 @@
     color-mix(in oklab, var(--color-brand-600) 12%, transparent);
 }
 
-/* 액션 영역: 오른쪽 정렬(기존 탭과 통일) */
+/* 액션 영역: 오른쪽 정렬 */
 .form-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
 }
 
-/* 수정하기 버튼 색상: #0a7 */
+/* 수정하기 버튼 색상 */
 .primary-button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -114,15 +92,5 @@
 }
 
 .feedback.success {
-  color: var(--color-brand-600);
-}
-
-/* 반응형 */
-@media (max-width: 480px) {
-  .my-info-tab {
-    padding: 16px;
-  }
-  .info-form {
-    gap: 12px;
-  }
+  color: #0aa82a;
 }

@@ -5,6 +5,7 @@ import MyReviewTab from "./components/MyReviewTab";
 import MyWishlistTab from "./components/MyWishlistTab";
 import Sidebar from "./components/Sidebar";
 import "./MyPage.css";
+import "./MyPageCommon.css"
 
 const MyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("info");

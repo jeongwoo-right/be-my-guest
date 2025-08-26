@@ -1,23 +1,3 @@
-/* MyReviewTab.css */
-
-/* 탭 콘텐츠 전체를 감싸는 영역 */
-.my-review-tab {
-  padding: 20px;
-  background-color: #fafafa;
-  border-radius: 8px;
-}
-
-/* '내가 작성한 리뷰' 제목 */
-.my-review-tab h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0; /* 제목 아래에 옅은 구분선 */
-}
-
 /* 리뷰 목록을 감싸는 영역 */
 .review-list {
   display: flex;
@@ -30,5 +10,5 @@
   text-align: center;
   font-size: 16px;
   color: #888;
-  padding: 10px 0;
+  padding: 40px 0; /* 여백을 좀 더 확보 */
 }
