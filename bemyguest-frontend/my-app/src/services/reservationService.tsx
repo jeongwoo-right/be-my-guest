@@ -9,6 +9,7 @@ export interface Booking {
   checkinDate: string;
   checkoutDate: string;
   status: 'RESERVED' | 'CANCELLED' | 'COMPLETED';
+  reviewWritten: boolean;
 }
 
 /**

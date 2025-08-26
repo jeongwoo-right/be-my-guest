@@ -1,0 +1,97 @@
+/* ReviewModal.css */
+
+/* 모달 배경 (화면 전체를 덮는 어두운 오버레이) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 실제 모달 콘텐츠 영역 */
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+.modal-content h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/* 별점 입력 영역 */
+.rating-input {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-input button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 28px;
+  color: #ccc;
+  padding: 0;
+}
+
+.rating-input button.active {
+  color: #ffb400;
+}
+
+/* 리뷰 내용 입력창 */
+.modal-content textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
+  margin-bottom: 24px;
+}
+
+/* 하단 버튼 영역 */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.close-button, .submit-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.close-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.submit-button {
+  background-color: #007bff;
+  color: #fff;
+}

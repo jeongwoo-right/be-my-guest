@@ -125,3 +125,20 @@ th:first-child, td:first-child {
 th:last-child, td:last-child {
   border-right: none;
 }
+
+.action-button {
+  padding: 6px 12px;
+  border: 1px solid #007bff;
+  color: #007bff;
+  background-color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.action-button:hover {
+  background-color: #007bff;
+  color: #fff;
+}

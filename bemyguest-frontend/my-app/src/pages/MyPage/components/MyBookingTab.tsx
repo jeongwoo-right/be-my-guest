@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { fetchUserBookings, cancelBooking } from '../../../services/reservationService';
+import { createReview } from '../../../services/reviewService';
 import type { Booking } from '../../../services/reservationService';
+import ReviewModal from './ReviewModal'; // ReviewModal import
 import './MyBookingTab.css';
 
 const MyBookingTab: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   // 예약 목록을 불러오는 함수 (재사용을 위해 분리)
   const loadBookings = async () => {
@@ -21,6 +26,25 @@ const MyBookingTab: React.FC = () => {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  const handleOpenReviewModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setIsModalOpen(true);
+  };
+
+  const handleReviewSubmit = async (rating: number, content: string) => {
+    if (!selectedBooking) return;
+    try {
+      await createReview(selectedBooking.reservationId, { rating, content });
+      alert('리뷰가 성공적으로 등록되었습니다.');
+      setIsModalOpen(false);
+      setSelectedBooking(null);
+      loadBookings();
+      // 필요 시 예약 목록을 새로고침하거나, 리뷰 작성 버튼을 비활성화/숨김 처리
+    } catch (error) {
+      alert('리뷰 등록에 실패했습니다.');
+    }
+  };
 
   // 예약 취소 버튼 클릭 핸들러
   const handleCancelBooking = async () => {
@@ -67,6 +91,7 @@ const MyBookingTab: React.FC = () => {
                 <th>시설명</th>
                 <th>예약일시</th>
                 <th>상태</th>
+                <th>비고</th>
               </tr>
             </thead>
             <tbody>
@@ -93,6 +118,17 @@ const MyBookingTab: React.FC = () => {
                       </td>
                       <td>{booking.checkinDate} ~ {booking.checkoutDate}</td>
                       <td className={statusInfo.className}>{statusInfo.text}</td>
+                      <td>
+                  {/* 🌟 렌더링 조건에 !booking.reviewWritten 추가 */}
+                  {booking.status === 'COMPLETED' && !booking.reviewWritten && (
+                    <button 
+                      className="action-button"
+                      onClick={() => handleOpenReviewModal(booking)}
+                    >
+                      리뷰 쓰기
+                    </button>
+                  )}
+                </td>
                     </tr>
                   );
                 })
@@ -114,6 +150,15 @@ const MyBookingTab: React.FC = () => {
           예약 취소
         </button>
       </div>
+
+      {selectedBooking && (
+        <ReviewModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleReviewSubmit}
+          guesthouseName={selectedBooking.guesthouseName}
+        />
+      )}
     </div>
   );
 };

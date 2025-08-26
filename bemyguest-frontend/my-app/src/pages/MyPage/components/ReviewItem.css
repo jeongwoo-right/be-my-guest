@@ -1,51 +1,94 @@
+/* ReviewItem.css */
+
 .review-item {
-  padding: 20px;
+  padding: 24px;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   background-color: #fff;
 }
+
+/* 🌟 텍스트 콘텐츠 전체를 감싸는 wrapper */
+.review-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* --- 헤더 영역 --- */
 .review-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
+
+.review-thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.review-header-text {
+  flex-grow: 1; /* 남은 공간을 모두 차지 */
+}
+
 .guesthouse-name {
   font-size: 18px;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 4px;
 }
-.review-date {
+
+.date-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   color: #888;
+  white-space: nowrap; /* 날짜가 줄바꿈되지 않도록 */
 }
+
+.edited-label {
+  font-size: 13px;
+}
+
+/* --- 별점 & 리뷰 본문 & 버튼 --- */
 .review-rating {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
 }
+
 .star-rating {
   color: #ffb400;
-  font-size: 20px;
-}
-.rating-text {
   font-size: 16px;
+}
+
+.rating-text {
+  font-size: 15px;
   font-weight: bold;
 }
+
 .review-content {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #333;
-  margin: 0 0 16px;
+  margin: 0px 0;
+  white-space: pre-wrap;
+  text-align: center; /* 리뷰 내용 가운데 정렬 */
 }
+
 .review-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: auto; /* 버튼들을 하단에 고정 */
 }
-.edit-button, .delete-button {
-  padding: 6px 12px;
+
+.edit-button,
+.delete-button {
+  padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;

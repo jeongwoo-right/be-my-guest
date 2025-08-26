@@ -7,6 +7,7 @@ import com.bemyguest.backend.reservation.dto.ReservationResponseDto;
 import com.bemyguest.backend.reservation.entity.Reservation;
 import com.bemyguest.backend.reservation.entity.ReservationStatus;
 import com.bemyguest.backend.reservation.repository.ReservationRepository;
+import com.bemyguest.backend.review.repository.ReviewRepository;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
 import com.bemyguest.backend.user.security.CustomUserDetails;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final GuesthouseRepository guesthouseRepository;
 
@@ -39,7 +41,7 @@ public class ReservationService {
         Reservation reservation = new Reservation(user, guesthouse, requestDto.getCheckinDate(), requestDto.getCheckoutDate());
         reservationRepository.save(reservation);
 
-        return new ReservationResponseDto(reservation);
+        return new ReservationResponseDto(reservation, false);
     }
 
     // 2. 예약 취소
@@ -77,7 +79,10 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
 
         return reservations.stream()
-                .map(ReservationResponseDto::new)
+                .map(reservation -> {
+                    boolean hasReview = reviewRepository.existsByReservationId(reservation.getId());
+                    return new ReservationResponseDto(reservation, hasReview);
+                })
                 .collect(Collectors.toList());
     }
     

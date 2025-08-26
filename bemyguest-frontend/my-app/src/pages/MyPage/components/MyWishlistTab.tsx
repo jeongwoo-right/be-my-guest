@@ -13,7 +13,6 @@ const MyWishlistTab: React.FC = () => {
     const loadWishlist = async () => {
       setIsLoading(true);
       const data = await fetchUserWishlist();
-      console.log('찜 목록 API 데이터:', data);
       setWishlist(data);
       setIsLoading(false);
     };

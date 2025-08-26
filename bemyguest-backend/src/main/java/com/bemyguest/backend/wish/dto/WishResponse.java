@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor 		// 모든 멤버 변수를 파라미터로 받는 생성자를 자동으로 만들어줌
 public class WishResponse {
-    private Long guesthouseId;
+    private Long id;
     private String name;
     private String address;
     private Region region;
