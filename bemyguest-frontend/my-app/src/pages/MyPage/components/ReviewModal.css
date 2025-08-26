@@ -77,7 +77,8 @@
   gap: 10px;
 }
 
-.close-button, .submit-button {
+.close-button,
+.submit-button {
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
@@ -92,6 +93,10 @@
 }
 
 .submit-button {
-  background-color: #007bff;
+  background-color: var(--color-brand-600);
   color: #fff;
+}
+
+.submit-button:hover {
+  background-color: var(--color-brand-700);
 }

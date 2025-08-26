@@ -164,8 +164,8 @@ export default function SearchBar({ onSearch, initial }: SearchBarProps) {
                   onClick={() => setRegion(r)}
                   className={`w-full text-center px-3 py-2 rounded-full border text-sm transition ${
                     region === r
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-white text-slate-700 border-slate-300 hover:border-slate-400"
+                      ? "bg-brand-600 text-white border-brand-600"
+                      : "bg-white text-slate-700 border-slate-300 hover:border-brand-300"
                   }`}
                 >
                   {r}
@@ -256,7 +256,7 @@ export default function SearchBar({ onSearch, initial }: SearchBarProps) {
         <Button
           onClick={handleSearch}
           disabled={!canSearch}
-          className={`h-10 shrink-0 px-6 rounded-xl bg-slate-900 text-white hover:bg-slate-800 ${
+          className={`h-10 shrink-0 px-6 rounded-xl bg-brand-600 text-white hover:bg-brand-700 ${
             !canSearch ? "opacity-60 cursor-not-allowed" : ""
           }`}
         >
