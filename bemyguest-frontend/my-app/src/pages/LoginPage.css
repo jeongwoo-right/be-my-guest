@@ -1,0 +1,133 @@
+/* LoginPage.css */
+
+/* 페이지 래퍼: 가운데 정렬 */
+.auth-page {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 가로 가운데 정렬 */
+}
+
+/* 제목: MyInfoTab과 동일한 톤 */
+.auth-page h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 50px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* 카드/폼 컨테이너 */
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* 필드 그룹 */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* 라벨 */
+.form-group label {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+/* 입력 공통 (MyInfoTab과 통일) */
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus {
+  border-color: #b3d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+}
+
+/* 액션 영역: 버튼 오른쪽 정렬(통일) */
+.form-actions {
+  display: flex;
+  justify-content: space-between; /* 로그인/회원가입 좌우 배치 */
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* 기본(primary) 버튼: #0a7 */
+.primary-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: #0a7;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #086;
+}
+
+.primary-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 보조(secondary) 버튼: 테두리형 */
+.secondary-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.secondary-button:hover {
+  background-color: #f7f7f7;
+  border-color: #bbb;
+}
+
+/* 에러 메시지 (통일 톤) */
+.feedback {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.feedback.error {
+  color: #d32f2f;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 16px;
+  }
+  .auth-card {
+    padding: 20px;
+  }
+}
