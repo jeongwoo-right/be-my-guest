@@ -15,6 +15,7 @@ import lombok.Getter;
 public class WishResponse {
 	@Schema(description = "게스트하우스 ID", example = "1")
     private Long id;
+	
 	@Schema(description = "게스트하우스 이름", example = "서울 한옥 게스트하우스")
     private String name;
 	@Schema(description = "게스트하우스 주소", example = "서울 종로구 1-1")
