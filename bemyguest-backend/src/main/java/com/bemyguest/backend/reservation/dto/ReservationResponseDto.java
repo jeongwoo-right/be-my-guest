@@ -12,9 +12,11 @@ public class ReservationResponseDto {
     private final LocalDate checkinDate;
     private final LocalDate checkoutDate;
     private final ReservationStatus status;
+    private final long guesthouseId; 
 
     public ReservationResponseDto(Reservation reservation) {
         this.reservationId = reservation.getId();
+        this.guesthouseId = reservation.getGuesthouse().getId();
         this.guesthouseName = reservation.getGuesthouse().getName(); // Guesthouse Entity에 getName()이 있다고 가정
         this.checkinDate = reservation.getCheckinDate();
         this.checkoutDate = reservation.getCheckoutDate();
