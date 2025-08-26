@@ -1,5 +1,6 @@
 package com.bemyguest.backend.search.controller;
 
+import com.bemyguest.backend.docs.SearchApiDocs;
 import com.bemyguest.backend.search.dto.GuesthouseSummary;
 import com.bemyguest.backend.search.dto.SearchRequest;
 import com.bemyguest.backend.search.service.SearchService;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/guesthouses")
-public class SearchController {
+public class SearchController implements SearchApiDocs {
 
     private final SearchService searchService;
 

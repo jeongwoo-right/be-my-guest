@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bemyguest.backend.docs.UserApiDocs;
 import com.bemyguest.backend.user.dto.LoginRequestDto;
 import com.bemyguest.backend.user.dto.LoginResponseDto;
 import com.bemyguest.backend.user.dto.SignupRequestDto;
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApiDocs {
 	
 	private final UserService userService;
 	

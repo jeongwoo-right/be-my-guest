@@ -1,5 +1,6 @@
 package com.bemyguest.backend.reservation.controller;
 
+import com.bemyguest.backend.docs.ReservationApiDocs;
 import com.bemyguest.backend.reservation.dto.ReservationRequestDto;
 import com.bemyguest.backend.reservation.dto.ReservationResponseDto;
 import com.bemyguest.backend.reservation.service.ReservationService;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reservations")
-public class ReservationController {
+public class ReservationController implements ReservationApiDocs {
 
     private final ReservationService reservationService;
 
