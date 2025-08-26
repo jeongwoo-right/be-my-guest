@@ -175,9 +175,9 @@ export default function GuesthouseDetail() {
 
     try {
       if (next) {
-        await addWish(userId, guesthouseId);
+        await addWish(guesthouseId);
       } else {
-        await removeWish(userId, guesthouseId);
+        await removeWish(guesthouseId);
       }
       localStorage.setItem(`gh:${guesthouseId}:liked`, next ? "1" : "0");
     } catch (e) {
