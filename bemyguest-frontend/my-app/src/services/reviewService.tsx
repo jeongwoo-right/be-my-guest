@@ -57,3 +57,22 @@ export const deleteReview = async (reviewId: number): Promise<void> => {
     throw error;
   }
 };
+
+// [신규] 리뷰 생성을 위한 데이터 타입
+export interface ReviewCreateRequest {
+  rating: number;
+  content: string;
+}
+
+/**
+ * [신규] 특정 예약에 대해 새로운 리뷰를 작성하는 API 함수
+ */
+export const createReview = async (reservationId: number, reviewData: ReviewCreateRequest): Promise<void> => {
+  try {
+    // API 명세서에 따라 guesthouseId 등 추가 정보가 필요할 수 있습니다.
+    await apiClient.post(`/review/create/${reservationId}`, reviewData);
+  } catch (error) {
+    console.error('리뷰 작성에 실패했습니다.', error);
+    throw error;
+  }
+};
