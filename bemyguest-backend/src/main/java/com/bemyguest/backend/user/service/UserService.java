@@ -4,12 +4,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bemyguest.backend.user.dto.LoginRequestDto;
+import com.bemyguest.backend.user.dto.LoginResponseDto;
 import com.bemyguest.backend.user.dto.SignupRequestDto;
 import com.bemyguest.backend.user.dto.UserInfoReadResponseDto;
 import com.bemyguest.backend.user.dto.UserInfoUpdateRequestDto;
 import com.bemyguest.backend.user.entity.Role;
 import com.bemyguest.backend.user.entity.User;
 import com.bemyguest.backend.user.repository.UserRepository;
+import com.bemyguest.backend.user.security.CustomUserDetails;
 import com.bemyguest.backend.user.security.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -43,23 +45,28 @@ public class UserService {
     /*
      * 로그인
      */
-    public String login(LoginRequestDto dto) {
+    public LoginResponseDto login(LoginRequestDto dto) {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
+        
+        String token = jwtTokenProvider.createToken(user.getEmail(), user.getRole().name());
+        LoginResponseDto response = new LoginResponseDto();
+        response.setAccessToken(token);
 
-        return jwtTokenProvider.createToken(user.getEmail(), user.getRole().name());
+        return response;
     }
     
     /*
      * 내 정보 조회
      */
-    public UserInfoReadResponseDto getMyInfo(String token) {
+    public UserInfoReadResponseDto getMyInfo(CustomUserDetails userDetails) {
         // 토큰에서 이메일 추출
-        String email = jwtTokenProvider.getEmail(token);
+//        String email = jwtTokenProvider.getEmail(userDetails);
+    	String email = userDetails.getUsername();
 
         // DB에서 사용자 조회
         User user = userRepository.findByEmail(email)
@@ -79,8 +86,8 @@ public class UserService {
     /*
      * 내 정보 수정
      */
-    public void updateMyInfo(String token, UserInfoUpdateRequestDto dto) {
-        String email = jwtTokenProvider.getEmail(token);
+    public void updateMyInfo(CustomUserDetails userDetails, UserInfoUpdateRequestDto dto) {
+        String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));

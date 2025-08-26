@@ -1,0 +1,127 @@
+/* MyBookingTab.css */
+
+/* 탭 콘텐츠 전체를 감싸는 영역 */
+.my-booking-tab {
+  padding: 20px;
+  background-color: #fff;
+}
+
+/* '나의 예약 현황' 제목 */
+.my-booking-tab h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/* 테이블을 감싸는 컨테이너 */
+.booking-table-container {
+  border-top: 2px solid #333;
+  width: 100%;
+}
+
+/* 테이블 기본 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse; /* 테두리 사이의 간격을 없애 표를 깔끔하게 만듦 */
+  text-align: center;
+  font-size: 15px;
+}
+
+/* 테이블 헤더(thead) 스타일 */
+thead {
+  background-color: #f9f9f9;
+  color: #555;
+}
+
+/* 테이블 헤더(th)와 데이터 셀(td) 공통 스타일 */
+th, td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle; /* 내용물을 세로 중앙 정렬 */
+  border-right: 1px solid #e0e0e0; /* 오른쪽에 구분선 추가 */
+}
+
+th {
+  font-weight: 500;
+}
+
+/* 테이블 바디(tbody)의 행에 마우스를 올렸을 때 */
+tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* --- 상태(status)별 텍스트 색상 --- */
+.status-completed{
+  color: #0aa82a;
+  font-weight: 500;
+}
+
+.status-reserved {
+  color: #d32f2f; /* 빨간색 계열 */
+  font-weight: 500;
+}
+
+.status-cancelled {
+  color: #555;
+  font-weight: 500;
+}
+
+/* --- 기타 스타일 --- */
+
+/* "로딩 중..." 또는 "예약 내역 없음" 메시지 */
+.loading-text,
+.no-results {
+  text-align: center;
+  font-size: 16px;
+  color: #888;
+  padding: 50px 0;
+}
+
+/* 시설명 링크 스타일 */
+td a {
+  color: #333;
+  text-decoration: none;
+}
+td a:hover {
+  text-decoration: underline;
+}
+
+/* 첫 번째 컬럼(선택) 너비 조절 */
+th:first-child, td:first-child {
+  width: 60px;
+}
+
+/* 하단 버튼 영역 ('예약 취소' 버튼) */
+.tab-actions {
+  display: flex;
+  justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+  margin-top: 20px;
+}
+
+.tab-actions button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background-color: #d32f2f; /* 빨간색 계열 */
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tab-actions button:hover:not(:disabled) {
+  background-color: #b71c1c; /* 마우스를 올렸을 때 더 진한 색으로 */
+}
+
+/* 비활성화된 버튼 스타일 */
+.tab-actions button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+th:last-child, td:last-child {
+  border-right: none;
+}

@@ -20,8 +20,11 @@ export default function App() {
 
         {/* 상세 페이지 */}
         <Route path="/guesthouses/:id" element={<GuesthouseDetail />} />
-
-        {/* 로그인/회원가입/마이페이지 */}
+        {/* 루트로 오면 샘플 id로 리다이렉트 */}
+        <Route
+          path="/"
+          element={<Navigate to="/guesthouses/search" replace />}
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/mypage" element={<MyPage />} />

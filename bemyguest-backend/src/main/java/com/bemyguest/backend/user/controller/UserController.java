@@ -1,6 +1,7 @@
 package com.bemyguest.backend.user.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -10,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bemyguest.backend.user.dto.LoginRequestDto;
+import com.bemyguest.backend.user.dto.LoginResponseDto;
 import com.bemyguest.backend.user.dto.SignupRequestDto;
 import com.bemyguest.backend.user.dto.UserInfoReadResponseDto;
 import com.bemyguest.backend.user.dto.UserInfoUpdateRequestDto;
+import com.bemyguest.backend.user.security.CustomUserDetails;
 import com.bemyguest.backend.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,22 +37,22 @@ public class UserController {
     // 2. 로그인 api
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
-        String token = userService.login(loginRequestDto);
+    	LoginResponseDto token = userService.login(loginRequestDto);
         return ResponseEntity.ok(token);
     }
 
     // 3. 내 정보 조회 api
     @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(@RequestHeader("Authorization") String token) {
-        UserInfoReadResponseDto userInfo = userService.getMyInfo(token);
+    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserInfoReadResponseDto userInfo = userService.getMyInfo(userDetails);
         return ResponseEntity.ok(userInfo);
     }
 
     // 4. 내 정보 수정 api
     @PutMapping("/me")
-    public ResponseEntity<?> updateMyInfo(@RequestHeader("Authorization") String token,
+    public ResponseEntity<?> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody UserInfoUpdateRequestDto updateDto) {
-        userService.updateMyInfo(token, updateDto);
+        userService.updateMyInfo(userDetails, updateDto);
         return ResponseEntity.ok("회원정보 수정 완료");
     }
 

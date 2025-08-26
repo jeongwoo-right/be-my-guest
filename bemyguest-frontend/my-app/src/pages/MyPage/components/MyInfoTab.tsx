@@ -1,63 +1,126 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-interface UserInfo {
+type Gender = "M" | "F" | "N";
+
+interface MeResponse {
   email: string;
   nickname: string;
+  // 백엔드 응답이 phone 또는 phoneNumber 중 무엇을 주더라도 커버
+  phone?: string;
   phoneNumber?: string;
-  gender: "M" | "F" | "N";
+  gender: Gender;
 }
 
 const MyInfoTab: React.FC = () => {
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const token = useMemo(() => localStorage.getItem("token"), []);
 
-  const token = localStorage.getItem("token");
+  // 표시용(읽기 전용)
+  const [email, setEmail] = useState("");
+
+  // 수정 가능한 폼 상태
+  const [nickname, setNickname] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState<Gender>("N");
+
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
 
   useEffect(() => {
-    axios.get<UserInfo>("http://localhost:8080/api/user/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setUser(res.data))
-      .catch(err => console.error(err));
-  }, []);
+    // 로그인X 상태
+    if (!token) {
+      return;
+    }
 
-  const handleUpdate = () => {
-    axios.put("http://localhost:8080/api/user/me", user, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(() => {
-      alert("수정 완료!");
-      setIsEditing(false);
-    }).catch(err => console.error(err));
+
+    // 로그인 상태라면
+    (async () => {
+      try {
+        const res = await axios.get<MeResponse>("/api/user/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data;
+        setEmail(data.email);
+        setNickname(data.nickname ?? "");
+        setPhone(data.phone ?? "");
+        setGender((data.gender as Gender) ?? "N");
+      } 
+      catch (e: any) {
+
+      }       
+    })();
+  }, [token]);
+
+
+
+  const handleSave = async () => {
+    // 로그인 X 상태
+    if (!token) {
+      setSaveError("로그인이 필요합니다.");
+      return;
+    }
+
+    // 로그인 상태
+    try {
+      setSaving(true);
+      setSaveError(null);
+      setSaveSuccess(null);
+
+      // 백엔드 사양에 맞춰 phone 키로 전송
+      await axios.put(
+        "/api/user/me",
+        { nickname, phone, gender },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setSaveSuccess("수정이 완료되었습니다.");
+    } 
+    catch (e: any) {
+      setSaveError(e?.response?.data?.message || "수정 중 오류가 발생했습니다.");
+    }
+    finally {
+      setSaving(false);
+    }
   };
 
-  if (!user) return <p>로딩 중...현재 MyInfoTab입니다.</p>;
 
   return (
     <div>
-      {isEditing ? (
-        <div>
-          <input
-            type="text"
-            value={user.nickname}
-            onChange={(e) => setUser({ ...user, nickname: e.target.value })}
-          />
-          <input
-            type="text"
-            value={user.phoneNumber || ""}
-            onChange={(e) => setUser({ ...user, phoneNumber: e.target.value })}
-          />
-          <button onClick={handleUpdate}>저장</button>
-          <button onClick={() => setIsEditing(false)}>취소</button>
-        </div>
-      ) : (
-        <div>
-          <p>이메일: {user.email}</p>
-          <p>닉네임: {user.nickname}</p>
-          <p>전화번호: {user.phoneNumber || "없음"}</p>
-          <p>성별: {user.gender}</p>
-          <button onClick={() => setIsEditing(true)}>수정하기</button>
-        </div>
-      )}
+      <div>
+        <label>이메일</label>
+        <div>{email}</div>
+      </div>
+
+      <div>
+        <label htmlFor="nickname">닉네임</label>
+        <input id="nickname" type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="닉네임을 입력하세요"/>
+      </div>
+
+      <div>
+        <label htmlFor="phone">전화번호</label>
+        <input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000"/>
+      </div>
+
+      <div>
+        <label htmlFor="gender">성별</label>
+        <select id="gender" value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
+          <option value="M">M</option>
+          <option value="F">F</option>
+          <option value="N">N</option>
+        </select>
+      </div>
+
+      <div>
+        <button onClick={handleSave} disabled={saving}>
+          {saving ? "저장 중..." : "수정하기"}
+        </button>
+      </div>
+
+      {saveError && <p>{saveError}</p>}
+      {saveSuccess && <p>{saveSuccess}</p>}
     </div>
   );
 };

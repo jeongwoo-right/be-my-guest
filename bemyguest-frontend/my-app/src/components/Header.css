@@ -30,27 +30,16 @@
   margin-right: 10px;
 }
 
-.user-menu {
-  border: 1px solid #e0e0e0;
-  border-radius: 25px;
-  padding: 8px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px; /* 요소 간격 */
-}
-
 .menu-icon {
   margin-right: 5px;
 }
 
-.avatar {
-  width: 30px;
-  height: 30px;
-  background-color: #e0e0e0;
-  border-radius: 50%;
+.auth-buttons {
+  display: flex;
+  gap: 10px;
 }
 
-.login-button {
+.auth-button {
   padding: 6px 12px;
   border: none;
   border-radius: 20px;
@@ -61,6 +50,11 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.login-button:hover {
+.user-header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-button:hover {
   background-color: #e03150;
 }
