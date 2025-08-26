@@ -3,15 +3,15 @@ import { useParams } from "react-router-dom";
 import api from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
-import { BACKEND_URL } from '../services/api';
+import { BACKEND_URL } from "../services/api";
 
 /** ───────────────── Types ───────────────── */
 
 type ReservationRequest = {
   userId: number;
   guesthouseId: number;
-  checkinDate: string;   // YYYY-MM-DD
-  checkoutDate: string;  // YYYY-MM-DD
+  checkinDate: string; // YYYY-MM-DD
+  checkoutDate: string; // YYYY-MM-DD
 };
 
 type ReservationResponse = {
@@ -46,8 +46,8 @@ type Guesthouse = {
 };
 
 type ReservationInput = {
-  checkIn: string;   // YYYY-MM-DD
-  checkOut: string;  // YYYY-MM-DD
+  checkIn: string; // YYYY-MM-DD
+  checkOut: string; // YYYY-MM-DD
   guests: number;
 };
 
@@ -152,7 +152,8 @@ export default function GuesthouseDetail() {
   }, [id]);
 
   const formatKRW = useMemo(
-    () => new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW" }),
+    () =>
+      new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW" }),
     []
   );
 
@@ -224,7 +225,9 @@ export default function GuesthouseDetail() {
         throw new Error(`Unexpected status ${res.status}`);
       }
       const created: ReservationResponse = res.data;
-      setReserveMsg(`예약이 생성되었습니다! (예약번호 #${created?.id ?? "알수없음"})`);
+      setReserveMsg(
+        `예약이 생성되었습니다! (예약번호 #${created?.id ?? "알수없음"})`
+      );
       setShowReserve(false);
       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
     } catch (e: any) {
@@ -233,12 +236,16 @@ export default function GuesthouseDetail() {
 
       let msg = "예약 생성에 실패했습니다.";
       if (typeof body === "string") msg = body;
-      else if (body && typeof body === "object") msg = body.message || body.error || JSON.stringify(body);
+      else if (body && typeof body === "object")
+        msg = body.message || body.error || JSON.stringify(body);
       else if (e?.message) msg = e.message;
 
       if (status === 409) msg = "해당 기간에는 이미 예약이 존재합니다.";
       if (status === 404) msg = "사용자 또는 게스트하우스를 찾을 수 없습니다.";
-      if (status === 400 && /Unrecognized|Cannot deserialize|JSON parse/i.test(String(body))) {
+      if (
+        status === 400 &&
+        /Unrecognized|Cannot deserialize|JSON parse/i.test(String(body))
+      ) {
         msg = "요청 형식이 서버와 일치하지 않습니다. (필드명/날짜형식 확인)";
       }
       if (status === 403) msg = "권한이 없습니다. (로그인이 필요할 수 있어요)";
@@ -299,41 +306,44 @@ export default function GuesthouseDetail() {
           </div>
         </div>
 
-
-{/* Thumbnail */}
-<div style={styles.hero}>
-  <img
-    src={`${BACKEND_URL}/thumbnail/guesthouse/${data.id}.jpg`}
-    alt={data.name}
-    style={styles.heroImg}
-    loading="lazy"
-    onError={(e) => {
-      e.currentTarget.onerror = null;
-      e.currentTarget.src = "/no-image.png"; // fallback
-    }}
-  />
-</div>
+        {/* Thumbnail */}
+        <div style={styles.hero}>
+          <img
+            src={`${BACKEND_URL}/thumbnail/guesthouse/${data.id}.jpg`}
+            alt={data.name}
+            style={styles.heroImg}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/no-image.png"; // fallback
+            }}
+          />
+        </div>
 
         <p style={{ marginTop: 16, lineHeight: 1.6 }}>{data.description}</p>
 
         {/* Facilities */}
         <h2 style={{ marginTop: 24, fontSize: 20 }}>시설</h2>
         <div style={styles.facilityGrid}>
-          <Facility label="Wi-Fi"        value={data.wifi}           icon="📶" />
-          <Facility label="주차"          value={data.parking}        icon="🅿️" />
-          <Facility label="조식"          value={data.breakfast}      icon="🍳" />
-          <Facility label="에어컨"        value={data.airConditioner} icon="❄️" />
-          <Facility label="TV"           value={data.tv}             icon="📺" />
-          <Facility label="세탁"          value={data.laundry}        icon="🧺" />
-          <Facility label="주방"          value={data.kitchen}        icon="🍽️" />
-          <Facility label="반려동물"      value={data.petAllowed}     icon="🐶" />
+          <Facility label="Wi-Fi" value={data.wifi} icon="📶" />
+          <Facility label="주차" value={data.parking} icon="🅿️" />
+          <Facility label="조식" value={data.breakfast} icon="🍳" />
+          <Facility label="에어컨" value={data.airConditioner} icon="❄️" />
+          <Facility label="TV" value={data.tv} icon="📺" />
+          <Facility label="세탁" value={data.laundry} icon="🧺" />
+          <Facility label="주방" value={data.kitchen} icon="🍽️" />
+          <Facility label="반려동물" value={data.petAllowed} icon="🐶" />
         </div>
 
         {/* Reviews (read-only) */}
         <h2 style={{ marginTop: 28, fontSize: 20 }}>후기</h2>
-        {reviewsLoading && <div style={{ color: "#666" }}>리뷰 불러오는 중...</div>}
+        {reviewsLoading && (
+          <div style={{ color: "#666" }}>리뷰 불러오는 중...</div>
+        )}
         {!reviewsLoading && reviewsError && (
-          <div style={{ color: "#c00" }}>리뷰 로딩 실패: {reviewsError}</div>
+          <div style={{ color: "#var(--color-brand-800)" }}>
+            리뷰 로딩 실패: {reviewsError}
+          </div>
         )}
         {!reviewsLoading && !reviewsError && (reviews?.length ?? 0) === 0 && (
           <div style={{ color: "#666" }}>아직 후기가 없습니다.</div>
@@ -342,10 +352,15 @@ export default function GuesthouseDetail() {
           <div style={{ marginTop: 10 }}>
             {reviews!.map((r) => (
               <div key={r.id} style={styles.reviewItem}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
                   <div>
                     <strong>{r.userName ?? "익명"}</strong>{" "}
-                    <span aria-label={`rating ${r.rating}`} style={{ color: "#f5a623" }}>
+                    <span
+                      aria-label={`rating ${r.rating}`}
+                      style={{ color: "#f5a623" }}
+                    >
                       {renderStars(r.rating)}
                     </span>
                     <span style={{ color: "#999", marginLeft: 8 }}>
@@ -353,7 +368,9 @@ export default function GuesthouseDetail() {
                     </span>
                   </div>
                 </div>
-                <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>{r.text}</div>
+                <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>
+                  {r.text}
+                </div>
               </div>
             ))}
           </div>
@@ -382,7 +399,9 @@ export default function GuesthouseDetail() {
               <input
                 type="date"
                 value={reserveForm.checkIn}
-                onChange={(e) => setReserveForm((f) => ({ ...f, checkIn: e.target.value }))}
+                onChange={(e) =>
+                  setReserveForm((f) => ({ ...f, checkIn: e.target.value }))
+                }
                 style={styles.input}
               />
             </div>
@@ -391,7 +410,9 @@ export default function GuesthouseDetail() {
               <input
                 type="date"
                 value={reserveForm.checkOut}
-                onChange={(e) => setReserveForm((f) => ({ ...f, checkOut: e.target.value }))}
+                onChange={(e) =>
+                  setReserveForm((f) => ({ ...f, checkOut: e.target.value }))
+                }
                 style={styles.input}
               />
             </div>
@@ -403,15 +424,26 @@ export default function GuesthouseDetail() {
                 max={data.capacity}
                 value={reserveForm.guests}
                 onChange={(e) =>
-                  setReserveForm((f) => ({ ...f, guests: Math.max(1, Number(e.target.value)) }))
+                  setReserveForm((f) => ({
+                    ...f,
+                    guests: Math.max(1, Number(e.target.value)),
+                  }))
                 }
                 style={styles.input}
               />
             </div>
 
-            {reserveMsg && <div style={{ color: "#c00", marginBottom: 8 }}>{reserveMsg}</div>}
+            {reserveMsg && (
+              <div
+                style={{ color: "#var(--color-brand-800)", marginBottom: 8 }}
+              >
+                {reserveMsg}
+              </div>
+            )}
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
+            >
               <button
                 style={{ ...styles.btn, ...styles.btnGhost }}
                 onClick={() => setShowReserve(false)}
@@ -449,7 +481,8 @@ function Facility({
   icon: string;
 }) {
   const state = value === true ? "on" : value === false ? "off" : "unknown";
-  const caption = state === "on" ? "제공" : state === "off" ? "미제공" : "정보 없음";
+  const caption =
+    state === "on" ? "제공" : state === "off" ? "미제공" : "정보 없음";
 
   return (
     <div
@@ -462,7 +495,13 @@ function Facility({
     >
       <span style={{ fontSize: 20 }}>{icon}</span>
       <span style={{ marginTop: 6 }}>{label}</span>
-      <span style={{ marginTop: 2, fontSize: 12, color: state === "on" ? "#0a7" : "#999" }}>
+      <span
+        style={{
+          marginTop: 2,
+          fontSize: 12,
+          color: state === "on" ? "var(--color-brand-600)" : "#999",
+        }}
+      >
         {caption}
       </span>
     </div>
@@ -476,21 +515,20 @@ function renderStars(n: number) {
 
 /** ───────────────── Styles ───────────────── */
 const styles: Record<string, CSSProperties> = {
-
   hero: {
-  width: "100%",
-  height: 260,
-  borderRadius: 12,
-  overflow: "hidden",
-  background: "#eee",
-  marginTop: 16,
-},
-heroImg: {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  display: "block",
-},
+    width: "100%",
+    height: 260,
+    borderRadius: 12,
+    overflow: "hidden",
+    background: "#eee",
+    marginTop: 16,
+  },
+  heroImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
 
   page: {
     minHeight: "100vh",
@@ -540,7 +578,7 @@ heroImg: {
     fontWeight: 600,
   },
   btnPrimary: {
-    background: "#0a7",
+    background: "var(--color-brand-600)",
     color: "#fff",
   },
   btnGhost: {

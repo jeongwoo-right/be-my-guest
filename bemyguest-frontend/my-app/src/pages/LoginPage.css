@@ -80,13 +80,13 @@
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  background-color: #0a7;
+  background-color: var(--color-brand-600);
   color: #fff;
   transition: background-color 0.2s;
 }
 
 .primary-button:hover:not(:disabled) {
-  background-color: #086;
+  background-color: var(--color-brand-700);
 }
 
 .primary-button:disabled {
@@ -119,7 +119,7 @@
 }
 
 .feedback.error {
-  color: #d32f2f;
+  color: var(--color-brand-600);
 }
 
 /* 반응형 */

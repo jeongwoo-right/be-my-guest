@@ -51,7 +51,7 @@
 
 /* --- 상태(status)별 텍스트 색상 --- */
 .my-booking-tab .status-completed {
-  color: #0aa82a;
+  color: var(--color-brand-600);
   font-weight: 500;
 }
 
@@ -112,10 +112,10 @@
 
 /* 예약 취소 버튼 스타일 */
 .my-booking-tab .action-button.cancel {
-  border-color: #d32f2f;
-  color: #d32f2f;
+  border-color: var(--color-brand-600);
+  color: var(--color-brand-600);
 }
 .my-booking-tab .action-button.cancel:hover {
-  background-color: #d32f2f;
+  background-color: var(--color-brand-600);
   color: #fff;
 }

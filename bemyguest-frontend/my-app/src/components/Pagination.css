@@ -29,9 +29,9 @@
 
 /* 현재 활성화된 페이지 버튼 스타일 */
 .page-btn.active {
-  background-color: #007bff;
+  background-color: var(--color-brand-600);
   color: #fff;
-  border-color: #007bff;
+  border-color: var(--color-brand-600);
   font-weight: bold;
 }
 
