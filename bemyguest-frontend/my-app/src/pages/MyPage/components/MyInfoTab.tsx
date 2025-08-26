@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import "./MyInfoTab.css";
 
 type Gender = "M" | "F" | "N";
 
 interface MeResponse {
   email: string;
   nickname: string;
-  // 백엔드 응답이 phone 또는 phoneNumber 중 무엇을 주더라도 커버
   phone?: string;
   phoneNumber?: string;
   gender: Gender;
@@ -27,49 +27,36 @@ const MyInfoTab: React.FC = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
-
   useEffect(() => {
-    // 로그인X 상태
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
-
-    // 로그인 상태라면
     (async () => {
       try {
         const res = await axios.get<MeResponse>("/api/user/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         const data = res.data;
         setEmail(data.email);
         setNickname(data.nickname ?? "");
-        setPhone(data.phone ?? "");
+        setPhone((data.phone ?? data.phoneNumber) ?? "");
         setGender((data.gender as Gender) ?? "N");
-      } 
-      catch (e: any) {
-
-      }       
+      } catch {
+        // 조용히 실패 처리(헤더에서 이미 로그인 상태를 표기하므로 별도 알림 불필요)
+      }
     })();
   }, [token]);
 
-
-
   const handleSave = async () => {
-    // 로그인 X 상태
     if (!token) {
       setSaveError("로그인이 필요합니다.");
       return;
     }
 
-    // 로그인 상태
     try {
       setSaving(true);
       setSaveError(null);
       setSaveSuccess(null);
 
-      // 백엔드 사양에 맞춰 phone 키로 전송
       await axios.put(
         "/api/user/me",
         { nickname, phone, gender },
@@ -77,50 +64,76 @@ const MyInfoTab: React.FC = () => {
       );
 
       setSaveSuccess("수정이 완료되었습니다.");
-    } 
-    catch (e: any) {
+    } catch (e: any) {
       setSaveError(e?.response?.data?.message || "수정 중 오류가 발생했습니다.");
-    }
-    finally {
+    } finally {
       setSaving(false);
     }
   };
 
-
   return (
-    <div>
-      <div>
-        <label>이메일</label>
-        <div>{email}</div>
-      </div>
+    <div className="my-info-tab">
+      <h2>내 정보</h2>
 
-      <div>
-        <label htmlFor="nickname">닉네임</label>
-        <input id="nickname" type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="닉네임을 입력하세요"/>
-      </div>
+      <div className="info-form">
+        <div className="form-group">
+          <label>이메일</label>
+          <div className="readonly-box">{email || "-"}</div>
+        </div>
 
-      <div>
-        <label htmlFor="phone">전화번호</label>
-        <input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000"/>
-      </div>
+        <div className="form-group">
+          <label htmlFor="nickname">닉네임</label>
+          <input
+            id="nickname"
+            className="form-input"
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력하세요"
+            maxLength={30}
+          />
+        </div>
 
-      <div>
-        <label htmlFor="gender">성별</label>
-        <select id="gender" value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
-          <option value="M">M</option>
-          <option value="F">F</option>
-          <option value="N">N</option>
-        </select>
-      </div>
+        <div className="form-group">
+          <label htmlFor="phone">전화번호</label>
+          <input
+            id="phone"
+            className="form-input"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="010-0000-0000"
+            inputMode="tel"
+          />
+        </div>
 
-      <div>
-        <button onClick={handleSave} disabled={saving}>
-          {saving ? "저장 중..." : "수정하기"}
-        </button>
-      </div>
+        <div className="form-group">
+          <label htmlFor="gender">성별</label>
+          <select
+            id="gender"
+            className="form-select"
+            value={gender}
+            onChange={(e) => setGender(e.target.value as Gender)}
+          >
+            <option value="M">M</option>
+            <option value="F">F</option>
+            <option value="N">N</option>
+          </select>
+        </div>
 
-      {saveError && <p>{saveError}</p>}
-      {saveSuccess && <p>{saveSuccess}</p>}
+        <div className="form-actions">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="primary-button"
+          >
+            {saving ? "저장 중..." : "수정하기"}
+          </button>
+        </div>
+
+        {saveError && <p className="feedback error">{saveError}</p>}
+        {saveSuccess && <p className="feedback success">{saveSuccess}</p>}
+      </div>
     </div>
   );
 };

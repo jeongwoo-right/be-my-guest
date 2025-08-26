@@ -1,0 +1,127 @@
+/* MyInfoTab.css */
+
+/* 배경 회색 제거 + 가로 가운데 정렬 */
+.my-info-tab {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 제목: 기존 톤 유지 (구분선 포함) */
+.my-info-tab h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+  width: 100%;
+  max-width: 560px; /* 구분선 길이도 폼 폭에 맞춤 */
+}
+
+/* 폼 컨테이너: 가운데 배치 + 폭 제한 */
+.info-form {
+  max-width: 560px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* 각 필드 그룹 */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 라벨 */
+.form-group label {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+/* 이메일 읽기전용 박스 */
+.readonly-box {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  border-radius: 8px;
+  color: #333;
+  word-break: break-all;
+}
+
+/* 입력 요소 공통 */
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #b3d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+}
+
+/* 액션 영역: 오른쪽 정렬(기존 탭과 통일) */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* 수정하기 버튼 색상: #0a7 */
+.primary-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: #0a7;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #086;
+}
+
+.primary-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 결과 메시지 */
+.feedback {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.feedback.error {
+  color: #d32f2f;
+}
+
+.feedback.success {
+  color: #0aa82a;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .my-info-tab {
+    padding: 16px;
+  }
+  .info-form {
+    gap: 12px;
+  }
+}
