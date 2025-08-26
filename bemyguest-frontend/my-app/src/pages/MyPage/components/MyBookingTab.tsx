@@ -1,41 +1,118 @@
 import React, { useState, useEffect } from 'react';
-import { fetchUserBookings } from '../../../services/reservationService';
+import { fetchUserBookings, cancelBooking } from '../../../services/reservationService';
 import type { Booking } from '../../../services/reservationService';
-import BookingItem from './BookingItem';
 import './MyBookingTab.css';
 
 const MyBookingTab: React.FC = () => {
-  // 1. 상태 관리: 예약 목록, 로딩 상태
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
 
-  // 2. 컴포넌트가 처음 렌더링될 때 API 호출
+  // 예약 목록을 불러오는 함수 (재사용을 위해 분리)
+  const loadBookings = async () => {
+    setIsLoading(true);
+    // 로그인된 사용자의 데이터를 가져오도록 userId 인자 제거
+    const data = await fetchUserBookings();
+    setBookings(data);
+    setIsLoading(false);
+  };
+
+  // 컴포넌트가 처음 마운트될 때 예약 목록 로드
   useEffect(() => {
-    const loadBookings = async () => {
-      setIsLoading(true);
-      const userId = 1; // 사용자 ID를 1로 가정
-      const data = await fetchUserBookings(userId);
-      setBookings(data);
-      setIsLoading(false);
-    };
-
     loadBookings();
-  }, []); // 빈 배열을 전달하여 한 번만 실행되도록 설정
+  }, []);
 
-  // 3. 렌더링 로직
+  // 예약 취소 버튼 클릭 핸들러
+  const handleCancelBooking = async () => {
+    if (selectedBookingId === null) {
+      alert('취소할 예약을 선택해주세요.');
+      return;
+    }
+    
+    if (window.confirm('선택한 예약을 정말로 취소하시겠습니까?')) {
+      try {
+        await cancelBooking(selectedBookingId);
+        alert('예약이 성공적으로 취소되었습니다.');
+        setSelectedBookingId(null); // 선택 상태 초기화
+        loadBookings(); // 목록 새로고침
+      } catch (error) {
+        // 백엔드에서 보낸 에러 메시지를 보여주면 더 좋습니다.
+        alert('예약 취소 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  // 예약 상태에 따른 텍스트와 클래스 반환 함수
+  const getStatusInfo = (status: Booking['status']) => {
+    switch (status) {
+      case 'COMPLETED': return { text: '이용완료', className: 'status-completed' };
+      case 'CANCELLED': return { text: '예약취소', className: 'status-cancelled' };
+      case 'RESERVED': return { text: '예약됨', className: 'status-reserved' };
+      default: return { text: status, className: '' };
+    }
+  };
+
   return (
     <div className="my-booking-tab">
-      <h2>나의 예약 내역</h2>
-      <div className="booking-list">
+      <h2>나의 예약 현황</h2>
+      
+      <div className="booking-table-container">
         {isLoading ? (
-          <p>예약 내역을 불러오는 중입니다...</p>
-        ) : bookings.length > 0 ? (
-          bookings.map(booking => (
-            <BookingItem key={booking.reservationId} booking={booking} />
-          ))
+          <p className="loading-text">예약 내역을 불러오는 중입니다...</p>
         ) : (
-          <p>예약 내역이 없습니다.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>선택</th>
+                <th>시설명</th>
+                <th>예약일시</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.length > 0 ? (
+                bookings.map(booking => {
+                  const statusInfo = getStatusInfo(booking.status);
+                  return (
+                    <tr key={booking.reservationId}>
+                      <td>
+                        <input
+                          type="radio"
+                          name="booking-selection"
+                          value={booking.reservationId}
+                          checked={selectedBookingId === booking.reservationId}
+                          onChange={() => setSelectedBookingId(booking.reservationId)}
+                          // 예약됨 상태가 아니면 비활성화
+                          disabled={booking.status !== 'RESERVED'}
+                        />
+                      </td>
+                      <td>
+                        <a href={`/guesthouses/${booking.guesthouseId}`} target="_blank" rel="noopener noreferrer">
+                          {booking.guesthouseName}
+                        </a>
+                      </td>
+                      <td>{booking.checkinDate} ~ {booking.checkoutDate}</td>
+                      <td className={statusInfo.className}>{statusInfo.text}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} className="no-results">예약 내역이 없습니다.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         )}
+      </div>
+      
+      <div className="tab-actions">
+        <button 
+          onClick={handleCancelBooking} 
+          disabled={selectedBookingId === null}
+        >
+          예약 취소
+        </button>
       </div>
     </div>
   );
