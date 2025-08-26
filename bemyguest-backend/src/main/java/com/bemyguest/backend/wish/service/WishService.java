@@ -88,18 +88,20 @@ public class WishService {
 	
 	// 찜 삭제
 	@Transactional
-	public String deleteWish(CustomUserDetails userDetails, Long wishId) {
+	public String deleteWish(CustomUserDetails userDetails, Long guesthouseId) {
 		
 		User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+		
 		Long userId = userDetails.getId();
-		Wish wish = wishRepository.findById(wishId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 Id의 찜을 찾을 수 없습니다."));
-		if (!wish.getUserId().equals(userId)) {
-            throw new SecurityException("찜을 삭제할 권한이 없습니다.");
-        }
-		Long guesthouseId = wish.getGuesthouseId();
-		wishRepository.deleteById(wishId);
+		
+//		Wish wish = wishRepository.findById(guesthouseId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 Id의 찜을 찾을 수 없습니다."));
+//		if (!wish.getUserId().equals(userId)) {
+//            throw new SecurityException("찜을 삭제할 권한이 없습니다.");
+//        }
+		
+		wishRepository.deleteByUserIdAndGuesthouseId(userId, guesthouseId);
 		return userId + "유저가 " + guesthouseId + "게스트하우스를 찜 해제했습니다.";
 	}
 }

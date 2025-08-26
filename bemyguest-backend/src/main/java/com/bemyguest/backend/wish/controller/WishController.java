@@ -67,11 +67,11 @@ public class WishController implements WishApiDocs {
      * URL: /api/wish/{wishId}
      * 200 OK + { "message": "..." }
      */
-    @DeleteMapping("/{wishId}")
+    @DeleteMapping("/{guesthouseId}")
     public ResponseEntity<ApiResponse> deleteWish(@AuthenticationPrincipal CustomUserDetails userDetails,
-    		@PathVariable("wishId") Long wishId) {
+    		@PathVariable("guesthouseId") Long guesthouseId) {
         
-    	String message = wishService.deleteWish(userDetails, wishId);
+    	String message = wishService.deleteWish(userDetails, guesthouseId);
     	System.out.println("[DELETE] " + message);
         return ResponseEntity.ok(new ApiResponse(message));
     }
