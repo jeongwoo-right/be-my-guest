@@ -11,8 +11,7 @@ const MyReviewTab: React.FC = () => {
   useEffect(() => {
     const loadReviews = async () => {
       setIsLoading(true);
-      const userId = 1; // 사용자 ID를 1로 가정
-      const data = await fetchUserReviews(userId);
+      const data = await fetchUserReviews();
       setReviews(data);
       setIsLoading(false);
     };

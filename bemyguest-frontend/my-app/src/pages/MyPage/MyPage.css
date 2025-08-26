@@ -13,3 +13,8 @@
   display: flex;
   min-height: calc(100vh - 80px); /* 헤더 높이(80px 가정) 빼고 전체 화면 채우기 */
 }
+
+.mypage-content {
+  flex-grow: 1; /* 남은 공간을 모두 차지하도록 설정 (가장 중요!) */
+  width: 100%;    /* 너비를 100%로 설정하여 내부 요소들이 잘 채워지도록 함 */
+}
