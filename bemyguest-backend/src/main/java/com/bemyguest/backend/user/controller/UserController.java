@@ -60,7 +60,7 @@ public class UserController implements UserApiDocs {
 
     // 4. 내 정보 수정 api
     @PutMapping("/me")
-    public ResponseEntity<?> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<String> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody UserInfoUpdateRequestDto updateDto) {
         userService.updateMyInfo(userDetails, updateDto);
         return ResponseEntity.ok("회원정보 수정 완료");
