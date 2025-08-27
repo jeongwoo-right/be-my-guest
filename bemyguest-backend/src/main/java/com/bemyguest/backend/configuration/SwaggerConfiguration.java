@@ -29,7 +29,7 @@ public class SwaggerConfiguration {
 	                    .scheme("bearer")
 	                    .bearerFormat("JWT")
 	                    .in(SecurityScheme.In.HEADER)
-	                    .description("JWT 토큰을 입력하세요. 예) Bearer eyJhbGciOi...")));
+	                    .description("JWT 토큰을 입력하세요. 예) eyJhbGciOi...")));
     }
 
 }
