@@ -40,8 +40,8 @@ public interface WishApiDocs {
         @ApiResponse(responseCode = "200", description = "찜 삭제 성공"),
     })
 	@Parameters({
-        @Parameter(description = "삭제할 찜 ID", name = "wishId")
+        @Parameter(description = "찜에서 삭제할 게스트하우스 ID", name = "guesthouseId")
 	})
 	ResponseEntity<com.bemyguest.backend.wish.dto.ApiResponse> deleteWish(@AuthenticationPrincipal CustomUserDetails userDetails,
-    		@PathVariable("wishId") Long wishId);
+			@PathVariable("guesthouseId") Long guesthouseId);
 }
