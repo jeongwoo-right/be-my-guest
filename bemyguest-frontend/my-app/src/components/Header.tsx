@@ -15,7 +15,7 @@ const Header: React.FC = () => {
       if(!token) return;
 
       try {
-        const res = await fetch("api/user/me", {
+        const res = await fetch("/api/user/me", {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -70,7 +70,7 @@ const Header: React.FC = () => {
       {isLoggedIn ? (
       <div>
         <div className='user-header-right'>
-          <span>{nickname} 님</span>
+          <span>{nickname} 님 </span>
           <button className="auth-button" onClick={goMypage}>마이페이지</button>
           <button className="auth-button" onClick={handleLogout}>로그아웃</button>
         </div>
