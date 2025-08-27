@@ -31,26 +31,26 @@ public class UserController implements UserApiDocs {
 	
 	// 1. 회원가입 api
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequestDto) {
+    public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupRequestDto) {
         userService.signup(signupRequestDto);
         return ResponseEntity.ok("회원가입 성공");
     }
 
     // 2. 로그인 api
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
     	LoginResponseDto token = userService.login(loginRequestDto);
         return ResponseEntity.ok(token);
     }
 
     // 3. 내 정보 조회 api
     @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<UserInfoReadResponseDto> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
             System.out.println("인증 실패 " + HttpStatus.UNAUTHORIZED);
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                 .body("로그인이 필요합니다.");
+                                 .body(null);
         }
         
         System.out.println("인증 성공");
@@ -60,7 +60,7 @@ public class UserController implements UserApiDocs {
 
     // 4. 내 정보 수정 api
     @PutMapping("/me")
-    public ResponseEntity<?> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<String> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestBody UserInfoUpdateRequestDto updateDto) {
         userService.updateMyInfo(userDetails, updateDto);
         return ResponseEntity.ok("회원정보 수정 완료");

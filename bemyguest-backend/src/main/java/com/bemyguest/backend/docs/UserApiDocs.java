@@ -5,7 +5,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.bemyguest.backend.user.dto.LoginRequestDto;
+import com.bemyguest.backend.user.dto.LoginResponseDto;
 import com.bemyguest.backend.user.dto.SignupRequestDto;
+import com.bemyguest.backend.user.dto.UserInfoReadResponseDto;
 import com.bemyguest.backend.user.dto.UserInfoUpdateRequestDto;
 import com.bemyguest.backend.user.security.CustomUserDetails;
 
@@ -22,25 +24,25 @@ public interface UserApiDocs {
 	@ApiResponses({
         @ApiResponse(responseCode = "200", description = "가입 성공"),
     })
-	ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequestDto);
+	ResponseEntity<String> signup(@RequestBody SignupRequestDto signupRequestDto);
 	
 	@Operation(summary = "로그인", description = "이메일과 비밀번호를 입력해 로그인합니다.", security = {})
 	@ApiResponses({
         @ApiResponse(responseCode = "200", description = "로그인 성공"),
     })
-	ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto);
+	ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto);
 	
 	@Operation(summary = "내 정보 조회", description = "로그인된 회원의 기본 정보를 조회합니다.")
 	@ApiResponses({
         @ApiResponse(responseCode = "200", description = "내 정보 조회 성공"),
     })
-	ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails);
+	ResponseEntity<UserInfoReadResponseDto> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails);
 	
 	@Operation(summary = "내 정보 수정", description = "로그인된 회원의 기본 정보를 수정합니다.")
 	@ApiResponses({
         @ApiResponse(responseCode = "200", description = "내 정보 수정 성공"),
     })
-	ResponseEntity<?> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+	ResponseEntity<String> updateMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UserInfoUpdateRequestDto updateDto);
 
 }

@@ -17,7 +17,7 @@ public class GuesthouseController implements GuesthouseApiDocs {
     private final GuesthouseService guesthouseService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getGuesthouseDetail(@PathVariable("id") Long id) {
+    public ResponseEntity<GuesthouseDetailDto> getGuesthouseDetail(@PathVariable("id") Long id) {
         try {
             GuesthouseDetailDto dto = guesthouseService.getDetail(id);
             return ResponseEntity.ok(dto);
