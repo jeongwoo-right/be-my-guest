@@ -3,6 +3,8 @@ package com.bemyguest.backend.docs;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.bemyguest.backend.guesthouse.dto.GuesthouseDetailDto;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -20,7 +22,7 @@ public interface GuesthouseApiDocs {
 	@Parameters({
         @Parameter(description = "상세 정보를 조회할 게스트하우스 ID", name = "id")
 	})
-	ResponseEntity<?> getGuesthouseDetail(@PathVariable("id") Long id);
+	ResponseEntity<GuesthouseDetailDto> getGuesthouseDetail(@PathVariable("id") Long id);
 	
 	
 }
