@@ -12,18 +12,21 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     try {
+      // userService.login 이 string(token) 을 반환한다고 가정
       const token = await login({ email, password });
-      localStorage.setItem("token", token); // JWT 저장
+
+      // ✅ 토큰 저장 + 같은 탭 반영을 위한 커스텀 이벤트 발행
+      localStorage.setItem("token", token);
+      window.dispatchEvent(new Event("token-changed"));
+
       alert("로그인 성공!");
       navigate("/");
     } catch {
       setError("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
     }
-  };
-
-  const goToSignup = () => {
-    navigate("/signup");
   };
 
   return (
@@ -63,9 +66,6 @@ const LoginPage: React.FC = () => {
           <div className="form-actions">
             <button type="submit" className="primary-button">
               로그인
-            </button>
-            <button type="button" className="secondary-button" onClick={goToSignup}>
-              회원가입
             </button>
           </div>
 

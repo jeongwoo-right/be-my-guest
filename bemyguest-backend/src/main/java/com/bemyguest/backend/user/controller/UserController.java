@@ -1,5 +1,6 @@
 package com.bemyguest.backend.user.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +46,14 @@ public class UserController implements UserApiDocs {
     // 3. 내 정보 조회 api
     @GetMapping("/me")
     public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            System.out.println("인증 실패 " + HttpStatus.UNAUTHORIZED);
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body("로그인이 필요합니다.");
+        }
+        
+        System.out.println("인증 성공");
         UserInfoReadResponseDto userInfo = userService.getMyInfo(userDetails);
         return ResponseEntity.ok(userInfo);
     }
