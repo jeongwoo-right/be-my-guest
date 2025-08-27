@@ -76,23 +76,30 @@ const GuesthouseListPage: React.FC = () => {
     endDateParam,
     guestsParam,
     currentPage,
-    sort,
-    dir,
   ]);
+
+  useEffect(() => {
+    // 현재 URL의 파라미터를 가져와서 복사
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    // sort와 dir 파라미터를 새로운 상태값으로 설정 (또는 덮어쓰기)
+    newSearchParams.set("sort", sort);
+    newSearchParams.set("dir", dir);
+    // URL 업데이트 (이 작업은 위의 API 호출 useEffect를 다시 트리거합니다)
+    setSearchParams(newSearchParams);
+  }, [sort, dir]); // sort나 dir 상태가 변경될 때만 이 effect를 실행
 
   const handleSearch = (criteria: {
     region: string;
     startDate: string;
     endDate: string;
-    guests: string;
+    guests: string; // number 타입으로 받는 것이 좋습니다. SearchBar에서 변환 필요
   }) => {
     setSearchParams({
       region: criteria.region,
       startDate: criteria.startDate,
       endDate: criteria.endDate,
       guests: String(criteria.guests),
-      sort,
-      dir,
+      // sort와 dir은 별도의 useEffect가 관리하므로 여기서 제거
     });
     setCurrentPage(1);
   };
