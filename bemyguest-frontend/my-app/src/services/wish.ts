@@ -1,19 +1,28 @@
 import api from "../services/api";
 
-export type WishItem = { guesthouseId: number; createdAt: string };
+// 목록 응답에 맞춘 타입 (원한다면 일부만 써도 됨)
+export type WishListItem = {
+  guesthouseId: number;
+  name: string;
+  address: string;
+  region: string;
+  capacity: number;
+  price: number;
+  description: string;
+  ratingAvg: number;
+  ratingCount: number;
+  createdAt: string;
+};
 
-/** 찜 목록 조회 */
-export async function getWishList(): Promise<WishItem[]> {
-  const res = await api.get(`/user/wish`);
-  return res.data as WishItem[];
+export async function getWishList(): Promise<WishListItem[]> {
+  const res = await api.get(`/wish`);  
+  return res.data as WishListItem[];
 }
 
-/** 찜 추가 */
 export async function addWish(guesthouseId: number) {
-  return api.post(`/wish`, {guesthouseId});
+  return api.post(`/wish`, { guesthouseId });
 }
 
-/** 찜 해제 (스펙 확정 후 하나로 정리) */
 export async function removeWish(guesthouseId: number) {
-    return await api.delete(`/user/wish/${guesthouseId}`);
+  return api.delete(`/wish/${guesthouseId}`);
 }
