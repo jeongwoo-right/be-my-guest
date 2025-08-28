@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import api, { BACKEND_URL } from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
@@ -133,6 +133,28 @@ export default function GuesthouseDetail() {
   const { id } = useParams();
   const gid = id ?? ""; // for localStorage keys
 
+  // ⬇️ read query params (support alt names)
+  const [sp] = useSearchParams();
+  const urlStart = sp.get("startDate") || sp.get("start") || "";
+  const urlEnd = sp.get("endDate") || sp.get("end") || "";
+  const urlGuests = (() => {
+    const raw = sp.get("guests");
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 1 ? n : 1;
+  })();
+
+  // ⬇️ optional: fallback to last search if the URL is missing dates
+  const lastSearch = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("search:last") || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const startFromAny = urlStart || lastSearch?.startDate || "";
+  const endFromAny = urlEnd || lastSearch?.endDate || "";
+  const guestsFromAny = urlGuests || lastSearch?.guests || 1;
+
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
   const isMember = !!currentUser; // token present & decodable
 
@@ -190,13 +212,25 @@ export default function GuesthouseDetail() {
   });
   // reservation
   const [showReserve, setShowReserve] = useState(false);
-  const [reserveForm, setReserveForm] = useState<ReservationInput>({
-    checkIn: "",
-    checkOut: "",
-    guests: 1,
-  });
+
+  // ⬇️ INIT reserveForm from URL/session if present
+  const [reserveForm, setReserveForm] = useState<ReservationInput>(() => ({
+    checkIn: startFromAny,
+    checkOut: endFromAny,
+    guests: guestsFromAny,
+  }));
   const [reserveMsg, setReserveMsg] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
+
+  // If URL params change (e.g., user navigates back from search), refresh empty fields
+  useEffect(() => {
+    setReserveForm((f) => ({
+      checkIn: startFromAny || f.checkIn,
+      checkOut: endFromAny || f.checkOut,
+      guests: guestsFromAny || f.guests,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlStart, urlEnd, urlGuests]);
 
   // reviews (read-only from backend)
   const [reviews, setReviews] = useState<ReviewItem[] | null>(null);
@@ -355,12 +389,12 @@ export default function GuesthouseDetail() {
     }
   };
 
-  /** Reservation submit (now auto-fills dates; confirm-only modal) */
+  /** Reservation submit (now respects URL/session dates; only auto-fills if missing) */
   const submitReservation = async () => {
     if (!id) return;
     setReserveMsg(null);
 
-    // auto-fill if absent (confirm modal has no inputs)
+    // Use chosen values; only auto-fill if not present at all
     let { checkIn, checkOut, guests } = reserveForm;
     if (!checkIn || !checkOut) {
       const today = new Date();
@@ -472,13 +506,13 @@ export default function GuesthouseDetail() {
 
             <button
               onClick={() => {
-                // ensure we have sensible defaults for the backend (today → tomorrow)
+                // Keep user-specified values; only fill if still empty
                 const today = new Date();
                 const tomorrow = nextDay(today, 1);
                 setReserveForm((f) => ({
-                  checkIn: f.checkIn || ymdLocal(today),
-                  checkOut: f.checkOut || ymdLocal(tomorrow),
-                  guests: f.guests || 1,
+                  checkIn: f.checkIn || startFromAny || ymdLocal(today),
+                  checkOut: f.checkOut || endFromAny || ymdLocal(tomorrow),
+                  guests: f.guests || guestsFromAny || 1,
                 }));
                 setReserveMsg(null);
                 setShowReserve(true);
@@ -564,17 +598,8 @@ export default function GuesthouseDetail() {
           </div>
         )}
 
-        {/* (Dev) show login state */}
-        <div style={{ marginTop: 24, color: "#777" }}>
-          {/* {isMember ? (
-            <span>
-              로그인 상태입니다
-              {currentUser?.name ? `: ${currentUser.name}` : ""}.
-            </span>
-          ) : (
-            <span>로그인하지 않은 상태입니다.</span>
-          )} */}
-        </div>
+        {/* (Dev) show login state (kept commented) */}
+        <div style={{ marginTop: 24, color: "#777" }}>{/* ... */}</div>
       </div>
 
       {/* Reservation confirm modal (예/아니요 only) */}
@@ -591,6 +616,13 @@ export default function GuesthouseDetail() {
             <p style={{ color: "#555", marginTop: 6 }}>
               {data.name} 예약을 진행합니다.
             </p>
+
+            {/* NEW: Echo back what will be sent */}
+            <div style={{ margin: "8px 0", color: "#333" }}>
+              체크인: <b>{reserveForm.checkIn || "(미선택)"}</b> · 체크아웃:{" "}
+              <b>{reserveForm.checkOut || "(미선택)"}</b> · 인원:{" "}
+              <b>{reserveForm.guests}명</b>
+            </div>
 
             {reserveMsg && (
               <div style={{ color: "#c00", margin: "8px 0" }}>{reserveMsg}</div>
@@ -612,10 +644,6 @@ export default function GuesthouseDetail() {
                 {reserving ? "예약 요청 중..." : "예"}
               </button>
             </div>
-
-            {/* <div style={{ marginTop: 8, color: "#888", fontSize: 12 }}>
-              * 확인 시 바로 예약 요청을 보냅니다. (기본: 오늘 → 내일)
-            </div> */}
           </div>
         </div>
       )}
