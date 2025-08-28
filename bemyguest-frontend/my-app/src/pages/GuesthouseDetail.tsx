@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api, { BACKEND_URL } from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
@@ -389,6 +389,9 @@ export default function GuesthouseDetail() {
     }
   };
 
+
+  const navigate = useNavigate();
+  
   /** Reservation submit (now respects URL/session dates; only auto-fills if missing) */
   const submitReservation = async () => {
     if (!id) return;
@@ -435,6 +438,10 @@ export default function GuesthouseDetail() {
       setShowReserve(false);
       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
       alert(data?.name + " 예약이 확정되었어요 🏡\n\n체크인 날짜: " + checkIn + "\n체크아웃 날짜: " + checkOut);
+
+      sessionStorage.setItem("mypageTab", "booking");
+      navigate("/mypage", { replace: true });
+
     } 
     catch (e: any) {
       const status = e?.response?.status;
