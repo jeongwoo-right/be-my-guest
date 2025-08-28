@@ -434,7 +434,9 @@ export default function GuesthouseDetail() {
       );
       setShowReserve(false);
       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
-    } catch (e: any) {
+      alert(data?.name + " 예약이 확정되었어요 🏡\n\n체크인 날짜: " + checkIn + "\n체크아웃 날짜: " + checkOut);
+    } 
+    catch (e: any) {
       const status = e?.response?.status;
       const body = e?.response?.data;
 
