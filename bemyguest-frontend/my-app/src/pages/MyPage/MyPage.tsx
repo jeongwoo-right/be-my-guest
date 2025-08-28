@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MyInfoTab from "./components/MyInfoTab";
 import MyBookingTab from "./components/MyBookingTab";
 import MyReviewTab from "./components/MyReviewTab";
@@ -7,8 +7,18 @@ import Sidebar from "./components/Sidebar";
 import "./MyPage.css";
 import "./MyPageCommon.css"
 
+type TabKey = "info" | "booking" | "review" | "wishlist";
+
 const MyPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("info");
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    (sessionStorage.getItem("mypageTab") as TabKey) ?? "info"
+  );
+
+  useEffect(() => {
+    sessionStorage.setItem("mypageTab", activeTab);
+  }, [activeTab]);
+
+
 
   const renderTabContent = () => {
     switch (activeTab) {
