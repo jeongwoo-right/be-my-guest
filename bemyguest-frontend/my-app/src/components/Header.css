@@ -10,8 +10,14 @@
 
 .logo {
   font-size: 24px;
-  font-weight: bold;
-  color: var(--color-brand-600); /* Airbnb red */
+  font-weight: 800;
+  color: var(--color-brand-600);
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.logo:hover {
+  color: var(--color-brand-700);
 }
 
 .search-bar {
@@ -39,19 +45,21 @@
 }
 
 .auth-button {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border: none;
-  border-radius: 20px;
+  border-radius: 10px;
   background-color: var(--color-brand-600);
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 }
 
 .user-header-right {
+  font-size: 17px;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 9px;
 }
 
 .auth-button:hover {

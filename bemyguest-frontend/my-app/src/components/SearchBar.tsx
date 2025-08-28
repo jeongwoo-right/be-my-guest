@@ -57,8 +57,7 @@ export default function SearchBar({ onSearch, initial }: SearchBarProps) {
     startDate && endDate && new Date(startDate) >= new Date(endDate)
       ? "체크아웃은 체크인 다음 날 이후여야 해요."
       : "";
-  const canSearch =
-    !!region && !!startDate && !!endDate && !dateError && guests >= 1;
+  const canSearch = !!startDate && !!endDate && !dateError && guests >= 1;
 
   // 날짜 클릭 로직(완전 제어) + 동일 날짜 재클릭 무시 + 재선택 시 완전 리셋
   const handleDayClick = (day: Date, _mod?: any, e?: React.MouseEvent) => {
@@ -70,16 +69,15 @@ export default function SearchBar({ onSearch, initial }: SearchBarProps) {
       if (!prev || (!prev.from && !prev.to))
         return { from: day, to: undefined };
       if (prev.from && !prev.to) {
-        if (day <= prev.from) return { from: day, to: undefined };
+        if (day < prev.from) return { from: day, to: prev.from };
+        if (day === prev.from) return { from: day, to: undefined };
         return { from: prev.from, to: day };
       }
-      // 시작/끝 모두 있었는데 다시 누르면 새 시작으로 리셋 + 리마운트
       setCalendarKey((k) => k + 1);
       return { from: day, to: undefined };
     });
   };
 
-  // 최초 1회: URL(initial) 우선 적용, 없으면 localStorage 복원
   const didHydrate = useRef(false);
   useEffect(() => {
     if (didHydrate.current) return;
@@ -161,7 +159,7 @@ export default function SearchBar({ onSearch, initial }: SearchBarProps) {
                 <button
                   key={r}
                   type="button"
-                  onClick={() => setRegion(r)}
+                  onClick={() => setRegion((prev) => (prev === r ? "" : r))}
                   className={`w-full text-center px-3 py-2 rounded-full border text-sm transition ${
                     region === r
                       ? "bg-brand-600 text-white border-brand-600"
