@@ -47,7 +47,7 @@ public class ReviewService {
         
         // ★ 추가: Guesthouse 평점 갱신
         Guesthouse guesthouse = reservation.getGuesthouse();
-        guesthouse.addReview(requestDto.getRating());
+        //guesthouse.addReview(requestDto.getRating());
 
         Review review = new Review(reservation, user, guesthouse, requestDto.getRating(), requestDto.getContent());
         reviewRepository.save(review);
@@ -65,7 +65,7 @@ public class ReviewService {
         // ★ 추가: Guesthouse 평점 갱신
         int oldRating = review.getRating();
         Guesthouse guesthouse = review.getGuesthouse();
-        guesthouse.updateReview(oldRating, requestDto.getRating());
+        //guesthouse.updateReview(oldRating, requestDto.getRating());
         
         review.update(requestDto.getRating(), requestDto.getContent());
     }
@@ -80,7 +80,7 @@ public class ReviewService {
         // ★ 추가: Guesthouse 평점 갱신
         int deletedRating = review.getRating();
         Guesthouse guesthouse = review.getGuesthouse();
-        guesthouse.deleteReview(deletedRating);
+        //guesthouse.deleteReview(deletedRating);
 
         reviewRepository.delete(review);
     }
