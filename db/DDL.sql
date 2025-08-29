@@ -1,4 +1,3 @@
-USE bemyguest;
 -- 안전 실행을 위해
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -125,3 +124,53 @@ CREATE TABLE IF NOT EXISTS wishes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- =================================================================
+-- [수정] 평점/리뷰 수 자동 계산을 위한 트리거(Triggers)
+-- =================================================================
+
+-- 트리거 작성을 위해 구분자(DELIMITER)를 일시적으로 변경
+DELIMITER $$
+
+-- 1) 리뷰 '추가' 시 평점/리뷰 수 업데이트 트리거
+CREATE TRIGGER `trg_after_review_insert`
+AFTER INSERT ON `reviews`
+FOR EACH ROW
+BEGIN
+    UPDATE `guesthouses`
+    SET
+        `rating_avg` = (SELECT AVG(rating) FROM reviews WHERE guesthouse_id = NEW.guesthouse_id),
+        `rating_count` = (SELECT COUNT(*) FROM reviews WHERE guesthouse_id = NEW.guesthouse_id)
+    WHERE id = NEW.guesthouse_id;
+END$$
+
+-- 2) 리뷰 '수정' 시 평점 업데이트 트리거
+CREATE TRIGGER `trg_after_review_update`
+AFTER UPDATE ON `reviews`
+FOR EACH ROW
+BEGIN
+    -- 평점(rating) 값이 변경되었을 때만 실행
+    IF OLD.rating <> NEW.rating THEN
+        UPDATE `guesthouses`
+        SET
+            `rating_avg` = (SELECT AVG(rating) FROM reviews WHERE guesthouse_id = NEW.guesthouse_id)
+        WHERE id = NEW.guesthouse_id;
+    END IF;
+END$$
+
+-- 3) 리뷰 '삭제' 시 평점/리뷰 수 업데이트 트리거
+CREATE TRIGGER `trg_after_review_delete`
+AFTER DELETE ON `reviews`
+FOR EACH ROW
+BEGIN
+    UPDATE `guesthouses`
+    SET
+        -- 만약 마지막 리뷰가 삭제되어 평균이 NULL이 되면 0으로 처리
+        `rating_avg` = IFNULL((SELECT AVG(rating) FROM reviews WHERE guesthouse_id = OLD.guesthouse_id), 0),
+        `rating_count` = (SELECT COUNT(*) FROM reviews WHERE guesthouse_id = OLD.guesthouse_id)
+    WHERE id = OLD.guesthouse_id;
+END$$
+
+-- 구분자(DELIMITER)를 다시 원래대로 복구
+DELIMITER ;
