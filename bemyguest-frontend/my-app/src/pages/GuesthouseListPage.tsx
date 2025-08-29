@@ -109,6 +109,15 @@ const GuesthouseListPage: React.FC = () => {
       guests: String(criteria.guests),
       // sort와 dir은 별도의 useEffect가 관리하므로 여기서 제거
     });
+    // ⬇️ keep last search for detail-page fallback
+    sessionStorage.setItem(
+      "search:last",
+      JSON.stringify({
+        startDate: criteria.startDate,
+        endDate: criteria.endDate,
+        guests: Number(criteria.guests) || 1,
+      })
+    );
     setCurrentPage(1);
   };
 

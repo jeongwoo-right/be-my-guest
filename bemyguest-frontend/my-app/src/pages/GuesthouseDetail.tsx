@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api, { BACKEND_URL } from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
 import { getReviewsByGuesthouse, type ReviewItem } from "../services/review";
@@ -71,6 +71,18 @@ function readCurrentUser(): CurrentUser {
   return { id, email, name };
 }
 
+/** ───────────────── Tiny date helpers (for default dates) ───────────────── */
+
+function ymdLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function nextDay(d: Date, n = 1) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+
 /** ───────────────── Types ───────────────── */
 
 type ReservationRequest = {
@@ -120,6 +132,28 @@ type ReservationInput = {
 export default function GuesthouseDetail() {
   const { id } = useParams();
   const gid = id ?? ""; // for localStorage keys
+
+  // ⬇️ read query params (support alt names)
+  const [sp] = useSearchParams();
+  const urlStart = sp.get("startDate") || sp.get("start") || "";
+  const urlEnd = sp.get("endDate") || sp.get("end") || "";
+  const urlGuests = (() => {
+    const raw = sp.get("guests");
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 1 ? n : 1;
+  })();
+
+  // ⬇️ optional: fallback to last search if the URL is missing dates
+  const lastSearch = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("search:last") || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const startFromAny = urlStart || lastSearch?.startDate || "";
+  const endFromAny = urlEnd || lastSearch?.endDate || "";
+  const guestsFromAny = urlGuests || lastSearch?.guests || 1;
 
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
   const isMember = !!currentUser; // token present & decodable
@@ -178,13 +212,25 @@ export default function GuesthouseDetail() {
   });
   // reservation
   const [showReserve, setShowReserve] = useState(false);
-  const [reserveForm, setReserveForm] = useState<ReservationInput>({
-    checkIn: "",
-    checkOut: "",
-    guests: 1,
-  });
+
+  // ⬇️ INIT reserveForm from URL/session if present
+  const [reserveForm, setReserveForm] = useState<ReservationInput>(() => ({
+    checkIn: startFromAny,
+    checkOut: endFromAny,
+    guests: guestsFromAny,
+  }));
   const [reserveMsg, setReserveMsg] = useState<string | null>(null);
   const [reserving, setReserving] = useState(false);
+
+  // If URL params change (e.g., user navigates back from search), refresh empty fields
+  useEffect(() => {
+    setReserveForm((f) => ({
+      checkIn: startFromAny || f.checkIn,
+      checkOut: endFromAny || f.checkOut,
+      guests: guestsFromAny || f.guests,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlStart, urlEnd, urlGuests]);
 
   // reviews (read-only from backend)
   const [reviews, setReviews] = useState<ReviewItem[] | null>(null);
@@ -238,14 +284,16 @@ export default function GuesthouseDetail() {
         }
 
         // Pretty print to console (what you asked for)
-        console.table(
-          list.map((w: any, i: number) => ({
-            idx: i,
-            id: ghIdOf(w),
-            name: w?.name,
-            address: w?.address,
-          }))
-        );
+        if (process.env.NODE_ENV !== "production") {
+          console.table(
+            list.map((w: any, i: number) => ({
+              idx: i,
+              id: ghIdOf(w),
+              name: w?.name,
+              address: w?.address,
+            }))
+          );
+        }
 
         const currentId = Number(id);
         const has = list.some((w) => ghIdOf(w) === currentId);
@@ -295,8 +343,6 @@ export default function GuesthouseDetail() {
   );
 
   /** Like toggle */
-  /** Like toggle */
-  /** Like toggle */
   const toggleLike = async () => {
     if (!data || likeBusy) return;
 
@@ -343,24 +389,28 @@ export default function GuesthouseDetail() {
     }
   };
 
-  /** Reservation submit */
+
+  const navigate = useNavigate();
+  
+  /** Reservation submit (now respects URL/session dates; only auto-fills if missing) */
   const submitReservation = async () => {
     if (!id) return;
     setReserveMsg(null);
 
-    if (!reserveForm.checkIn || !reserveForm.checkOut) {
-      setReserveMsg("체크인/체크아웃 날짜를 선택해주세요.");
-      return;
+    // Use chosen values; only auto-fill if not present at all
+    let { checkIn, checkOut, guests } = reserveForm;
+    if (!checkIn || !checkOut) {
+      const today = new Date();
+      checkIn = ymdLocal(today);
+      checkOut = ymdLocal(nextDay(today, 1));
     }
-    if (reserveForm.checkIn >= reserveForm.checkOut) {
-      setReserveMsg("체크아웃 날짜는 체크인보다 뒤여야 합니다.");
-      return;
-    }
+    if (!guests) guests = 1;
+
     if (!isMember) {
       setReserveMsg("회원만 예약할 수 있습니다. 로그인해주세요.");
       return;
     }
-    if (reserveForm.guests > (data?.capacity ?? 1)) {
+    if (guests > (data?.capacity ?? 1)) {
       setReserveMsg(`최대 인원(${data?.capacity}명)을 초과했습니다.`);
       return;
     }
@@ -369,8 +419,8 @@ export default function GuesthouseDetail() {
     try {
       const base = {
         guesthouseId: Number(id),
-        checkinDate: reserveForm.checkIn,
-        checkoutDate: reserveForm.checkOut,
+        checkinDate: checkIn,
+        checkoutDate: checkOut,
       };
 
       // Only include userId if we confidently have one
@@ -387,7 +437,13 @@ export default function GuesthouseDetail() {
       );
       setShowReserve(false);
       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
-    } catch (e: any) {
+      alert(data?.name + " 예약이 확정되었어요 🏡\n\n체크인 날짜: " + checkIn + "\n체크아웃 날짜: " + checkOut);
+
+      sessionStorage.setItem("mypageTab", "booking");
+      navigate("/mypage", { replace: true });
+
+    } 
+    catch (e: any) {
       const status = e?.response?.status;
       const body = e?.response?.data;
 
@@ -458,7 +514,18 @@ export default function GuesthouseDetail() {
             </button>
 
             <button
-              onClick={() => setShowReserve(true)}
+              onClick={() => {
+                // Keep user-specified values; only fill if still empty
+                const today = new Date();
+                const tomorrow = nextDay(today, 1);
+                setReserveForm((f) => ({
+                  checkIn: f.checkIn || startFromAny || ymdLocal(today),
+                  checkOut: f.checkOut || endFromAny || ymdLocal(tomorrow),
+                  guests: f.guests || guestsFromAny || 1,
+                }));
+                setReserveMsg(null);
+                setShowReserve(true);
+              }}
               disabled={!isMember}
               title={isMember ? "예약하기" : "회원만 예약 가능"}
               style={{
@@ -540,87 +607,51 @@ export default function GuesthouseDetail() {
           </div>
         )}
 
-        {/* (Dev) show login state */}
-        <div style={{ marginTop: 24, color: "#777" }}>
-          {isMember ? (
-            <span>
-              로그인 상태입니다
-              {currentUser?.name ? `: ${currentUser.name}` : ""}.
-            </span>
-          ) : (
-            <span>로그인하지 않은 상태입니다.</span>
-          )}
-        </div>
+        {/* (Dev) show login state (kept commented) */}
+        <div style={{ marginTop: 24, color: "#777" }}>{/* ... */}</div>
       </div>
 
-      {/* Reservation modal */}
+      {/* Reservation confirm modal (예/아니요 only) */}
       {showReserve && (
-        <div style={styles.modalBackdrop} onClick={() => setShowReserve(false)}>
+        <div
+          style={styles.modalBackdrop}
+          onClick={() => setShowReserve(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="예약 확인"
+        >
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginTop: 0 }}>예약하기</h3>
-            <div style={styles.formRow}>
-              <label style={styles.label}>체크인</label>
-              <input
-                type="date"
-                value={reserveForm.checkIn}
-                onChange={(e) =>
-                  setReserveForm((f) => ({ ...f, checkIn: e.target.value }))
-                }
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.formRow}>
-              <label style={styles.label}>체크아웃</label>
-              <input
-                type="date"
-                value={reserveForm.checkOut}
-                onChange={(e) =>
-                  setReserveForm((f) => ({ ...f, checkOut: e.target.value }))
-                }
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.formRow}>
-              <label style={styles.label}>인원</label>
-              <input
-                type="number"
-                min={1}
-                max={data.capacity}
-                value={reserveForm.guests}
-                onChange={(e) =>
-                  setReserveForm((f) => ({
-                    ...f,
-                    guests: Math.max(1, Number(e.target.value)),
-                  }))
-                }
-                style={styles.input}
-              />
+            <h3 style={{ marginTop: 0 }}>예약 하시겠습니까?</h3>
+            <p style={{ color: "#555", marginTop: 6 }}>
+              {data.name} 예약을 진행합니다.
+            </p>
+
+            {/* NEW: Echo back what will be sent */}
+            <div style={{ margin: "8px 0", color: "#333" }}>
+              체크인: <b>{reserveForm.checkIn || "(미선택)"}</b> · 체크아웃:{" "}
+              <b>{reserveForm.checkOut || "(미선택)"}</b> · 인원:{" "}
+              <b>{reserveForm.guests}명</b>
             </div>
 
             {reserveMsg && (
-              <div style={{ color: "#c00", marginBottom: 8 }}>{reserveMsg}</div>
+              <div style={{ color: "#c00", margin: "8px 0" }}>{reserveMsg}</div>
             )}
 
-            <div
-              style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
-            >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
                 style={{ ...styles.btn, ...styles.btnGhost }}
                 onClick={() => setShowReserve(false)}
                 disabled={reserving}
               >
-                취소
+                아니요
               </button>
               <button
                 style={{ ...styles.btn, ...styles.btnPrimary }}
                 onClick={submitReservation}
                 disabled={reserving}
               >
-                {reserving ? "예약 요청 중..." : "예약 요청"}
+                {reserving ? "예약 요청 중..." : "예"}
               </button>
-            </div>
-            <div style={{ marginTop: 8, color: "#888", fontSize: 12 }}>
-              * 실제 API 연결 상태입니다.
             </div>
           </div>
         </div>
