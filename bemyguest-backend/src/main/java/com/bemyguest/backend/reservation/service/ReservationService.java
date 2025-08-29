@@ -80,7 +80,7 @@ public class ReservationService {
 
         return reservations.stream()
                 .map(reservation -> {
-                    boolean hasReview = reviewRepository.existsByReservationId(reservation.getId());
+                    boolean hasReview = reviewRepository.existsByGuesthouseIdAndUserId(reservation.getGuesthouse().getId(), reservation.getUser().getId());
                     return new ReservationResponseDto(reservation, hasReview);
                 })
                 .collect(Collectors.toList());
