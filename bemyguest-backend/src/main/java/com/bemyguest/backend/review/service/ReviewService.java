@@ -41,7 +41,7 @@ public class ReviewService {
         if (!reservation.getUser().getId().equals(user.getId())) {
             throw new SecurityException("리뷰를 작성할 권한이 없습니다.");
         }
-        if (reviewRepository.existsByReservationId(reservationId)) {
+        if (reviewRepository.existsByGuesthouseIdAndUserId(reservation.getGuesthouse().getId(), reservation.getUser().getId())) {
             throw new IllegalStateException("이미 작성된 리뷰가 존재합니다.");
         }
         
