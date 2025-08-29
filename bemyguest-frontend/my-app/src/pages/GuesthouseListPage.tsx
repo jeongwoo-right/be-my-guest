@@ -41,35 +41,32 @@ const GuesthouseListPage: React.FC = () => {
   useEffect(() => {
     // URL에서 sort/dir 싱크
     const sortParam =
-      (searchParams.get("sort") as "rating" | "price" | "name") || "rating";
-    const dirParam = (searchParams.get("dir") as "asc" | "desc") || "desc";
+      (searchParams.get("sort") as "rating" | "price" | "name") || sort;
+    const dirParam = (searchParams.get("dir") as "asc" | "desc") || dir;
     if (sortParam && sortParam !== sort) setSort(sortParam);
     if (dirParam && dirParam !== dir) setDir(dirParam);
-
-    if (!region) return;
 
     const loadGuesthouses = async () => {
       setIsLoading(true);
 
-      const searchRequest: GuesthouseSearchRequest = {
-        region,
+      const req: any = {
         startDate: startDateParam,
         endDate: endDateParam,
         guests: guestsParam,
         page: currentPage - 1,
-        size: 9,
+        size: 10,
         sort: sortParam,
-        dir: dirParam ,
+        dir: dirParam,
       };
+      if (region) req.region = region;
 
-      const response = await searchGuesthouses(searchRequest);
+      const response = await searchGuesthouses(req as GuesthouseSearchRequest);
       setGuesthouses(response.content);
       setTotalPages(response.totalPages);
       setIsLoading(false);
     };
 
     loadGuesthouses();
-    // region/start/end/guests가 바뀌면 재조회
   }, [
     searchParams,
     region,
@@ -79,21 +76,11 @@ const GuesthouseListPage: React.FC = () => {
     currentPage,
   ]);
 
-  useEffect(() => {
-    // 현재 URL의 파라미터를 가져와서 복사
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    // sort와 dir 파라미터를 새로운 상태값으로 설정 (또는 덮어쓰기)
-    newSearchParams.set("sort", sort);
-    newSearchParams.set("dir", dir);
-    // URL 업데이트 (이 작업은 위의 API 호출 useEffect를 다시 트리거합니다)
-    setSearchParams(newSearchParams);
-  }, [sort, dir]); // sort나 dir 상태가 변경될 때만 이 effect를 실행
-
   const handleSearch = (criteria: {
     region: string;
     startDate: string;
     endDate: string;
-    guests: string; // number 타입으로 받는 것이 좋습니다. SearchBar에서 변환 필요
+    guests: string;
   }) => {
     pushRecent({
       region: criteria.region,
@@ -102,14 +89,15 @@ const GuesthouseListPage: React.FC = () => {
       guests: Number(criteria.guests),
     });
 
-    setSearchParams({
-      region: criteria.region,
+    const params = new URLSearchParams({
       startDate: criteria.startDate,
       endDate: criteria.endDate,
       guests: String(criteria.guests),
-      // sort와 dir은 별도의 useEffect가 관리하므로 여기서 제거
     });
-    // ⬇️ keep last search for detail-page fallback
+    if (criteria.region) params.set("region", criteria.region); // ✅ 빈 값이면 미포함
+
+    setSearchParams(params);
+
     sessionStorage.setItem(
       "search:last",
       JSON.stringify({
@@ -118,6 +106,7 @@ const GuesthouseListPage: React.FC = () => {
         guests: Number(criteria.guests) || 1,
       })
     );
+
     setCurrentPage(1);
   };
 

@@ -1,3 +1,4 @@
+import React from "react";
 import { useRecentSearches } from "@/hooks/useRecentSearches";
 import type { SearchCond } from "@/services/recentSearch";
 import { removeRecentAt, clearRecent } from "@/services/recentSearch";
@@ -20,17 +21,24 @@ export default function RecentSearchChips({
   showTitle = true,
 }: Props) {
   const { items, reload } = useRecentSearches();
+
+  React.useEffect(() => {
+    const onChange = () => reload();
+    window.addEventListener("recent-changed", onChange);
+    return () => window.removeEventListener("recent-changed", onChange);
+  }, [reload]);
+
   if (items.length === 0) return null;
 
   const handleRemove = (idx: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     removeRecentAt(idx);
-    reload();
+    reload(); // 로컬에서도 즉시 갱신
   };
 
   const handleClearAll = () => {
     clearRecent();
-    reload();
+    reload(); // 로컬에서도 즉시 갱신
   };
 
   return (

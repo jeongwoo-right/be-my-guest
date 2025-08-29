@@ -25,11 +25,12 @@ export default function SearchPage() {
 
     // 검색 이동
     const params = new URLSearchParams({
-      region: criteria.region,
       startDate: criteria.startDate,
       endDate: criteria.endDate,
       guests: String(criteria.guests),
     });
+    if (criteria.region) params.set("region", criteria.region);
+
     navigate(`/guesthouses/search?${params.toString()}`);
   };
 

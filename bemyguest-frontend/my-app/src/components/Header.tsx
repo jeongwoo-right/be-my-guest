@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Header.css";
 import { useNavigate } from "react-router-dom";
+import { clearRecent } from "@/services/recentSearch";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -85,8 +86,16 @@ const Header: React.FC = () => {
   const goToMainPage = () => navigate("/");
 
   const handleLogout = () => {
-    // 로그아웃 시 즉시 반영
     localStorage.removeItem("token");
+    window.dispatchEvent(new Event("token-changed"));
+
+    localStorage.removeItem("bmg:search");
+    clearRecent();
+
+    window.dispatchEvent(new Event("recent-changed"));
+
+    sessionStorage.removeItem("search:last");
+
     setToken(null);
     setNickname(null);
     alert("로그아웃 되었습니다.");
@@ -97,12 +106,12 @@ const Header: React.FC = () => {
     <header className="header-container">
       {/* 로고 */}
       <div className="logo" onClick={goToMainPage}>
-        <img 
-        src="/logo.png"   // public 폴더에 logo.png 넣은 경우 경로는 이렇게 작성
-        alt="로고" 
-        className="logo-img"
-      />
-      <span className="logo-text">BeMyGuest</span>
+        <img
+          src="/logo.png" // public 폴더에 logo.png 넣은 경우 경로는 이렇게 작성
+          alt="로고"
+          className="logo-img"
+        />
+        <span className="logo-text">BeMyGuest</span>
       </div>
 
       {/* 로그인 여부에 따라, 로그인/로그아웃 버튼 */}
