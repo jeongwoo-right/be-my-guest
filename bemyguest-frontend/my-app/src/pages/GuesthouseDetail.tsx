@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api, { BACKEND_URL } from "../services/api";
 import { addWish, removeWish, getWishList } from "../services/wish";
@@ -71,6 +71,32 @@ function readCurrentUser(): CurrentUser {
   return { id, email, name };
 }
 
+/** ───────────────── Wish cache helpers (namespaced) ───────────────── */
+
+// Who is the current identity for namespacing local cache
+function whoKey(u: CurrentUser): string {
+  if (u && Number.isFinite(u.id)) return `uid:${u!.id}`;
+  const token = localStorage.getItem("token") || "";
+  const p = decodeJwtPayload(token);
+  if (p?.sub) return `sub:${String(p.sub)}`;
+  return "anon";
+}
+
+// Build a per-user, per-guesthouse like key
+function likeKey(gid: string | number, who: string) {
+  return `wish:${who}:gh:${gid}:liked`;
+}
+
+// Clear all wish cache entries (any user namespace)
+function clearWishCache() {
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)!;
+    if (k.startsWith("wish:")) keys.push(k);
+  }
+  keys.forEach((k) => localStorage.removeItem(k));
+}
+
 /** ───────────────── Tiny date helpers (for default dates) ───────────────── */
 
 function ymdLocal(d: Date) {
@@ -131,7 +157,7 @@ type ReservationInput = {
 /** ───────────────── Component ───────────────── */
 export default function GuesthouseDetail() {
   const { id } = useParams();
-  const gid = id ?? ""; // for localStorage keys
+  const gid = id ?? ""; // for keys
 
   // ⬇️ read query params (support alt names)
   const [sp] = useSearchParams();
@@ -158,22 +184,52 @@ export default function GuesthouseDetail() {
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
   const isMember = !!currentUser; // token present & decodable
 
+  // Track previous user id to detect same-tab logout transitions
+  const prevUserIdRef = useRef<number | undefined>(undefined);
+
   useEffect(() => {
     const refresh = () => setCurrentUser(readCurrentUser());
     refresh();
 
     // Refresh when the tab regains focus or when localStorage('token') changes (other tabs)
-    window.addEventListener("focus", refresh);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "token") refresh();
+      if (e.key === "token") {
+        if (!e.newValue) {
+          // token removed in another tab ⇒ clear wish caches
+          clearWishCache();
+        }
+        refresh();
+      }
     };
     window.addEventListener("storage", onStorage);
 
+    // Handle bfcache (back/forward navigation restoring the page without remount)
+    const onPageShow = (e: any /* PageTransitionEvent */) => {
+      if (e?.persisted) {
+        refresh();
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+
     return () => {
-      window.removeEventListener("focus", refresh);
+      window.removeEventListener("focus", onFocus);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pageshow", onPageShow);
     };
   }, []);
+
+  // Detect same-tab logout (currentUser -> null) and clear wish cache
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    const curr = currentUser?.id;
+    if (prev != null && curr == null) {
+      clearWishCache();
+    }
+    prevUserIdRef.current = curr;
+  }, [currentUser?.id]);
 
   // keep this effect but try the /api path first
   useEffect(() => {
@@ -207,9 +263,9 @@ export default function GuesthouseDetail() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [liked, setLiked] = useState<boolean>(() => {
-    return gid ? localStorage.getItem(`gh:${gid}:liked`) === "1" : false;
-  });
+  // Start with false; we will hydrate from per-user cache/server in an effect
+  const [liked, setLiked] = useState<boolean>(false);
+
   // reservation
   const [showReserve, setShowReserve] = useState(false);
 
@@ -259,32 +315,29 @@ export default function GuesthouseDetail() {
     })();
   }, [id]);
 
+  /** Namespaced like boot + server reconciliation */
   useEffect(() => {
     const run = async () => {
       setLikedLoading(true);
       try {
         if (!id) return;
 
-        // Not logged in → trust cache only
         if (!isMember) {
-          const lk = localStorage.getItem(`gh:${id}:liked`);
-          if (lk != null) setLiked(lk === "1");
+          // Feature requires login: do not trust/show any cached likes when logged out
+          setLiked(false);
           return;
         }
 
-        // Logged in → fetch server list
+        const who = whoKey(currentUser);
+        const k = likeKey(id, who);
+
+        // Fast boot from per-user cache (if present)
+        const cached = localStorage.getItem(k);
+        if (cached != null) setLiked(cached === "1");
+
+        // Server is the source of truth
         const list = await getWishList(); // array of guesthouses
-        console.log("[wish] raw list:", list);
-
-        if (!Array.isArray(list)) {
-          console.warn("[wish] unexpected shape; falling back to cache");
-          const lk = localStorage.getItem(`gh:${id}:liked`);
-          if (lk != null) setLiked(lk === "1");
-          return;
-        }
-
-        // Pretty print to console (what you asked for)
-        if (process.env.NODE_ENV !== "production") {
+        if (process.env.NODE_ENV !== "production" && Array.isArray(list)) {
           console.table(
             list.map((w: any, i: number) => ({
               idx: i,
@@ -296,26 +349,27 @@ export default function GuesthouseDetail() {
         }
 
         const currentId = Number(id);
-        const has = list.some((w) => ghIdOf(w) === currentId);
+        const has =
+          Array.isArray(list) && list.some((w) => ghIdOf(w) === currentId);
 
-        setLiked(has);
-        localStorage.setItem(`gh:${id}:liked`, has ? "1" : "0");
+        setLiked(!!has);
+        localStorage.setItem(k, has ? "1" : "0");
       } catch (e) {
-        console.warn("[wish] load failed; using cache", e);
-        const lk = id ? localStorage.getItem(`gh:${id}:liked`) : null;
-        if (lk != null) setLiked(lk === "1");
+        // Keep whatever we showed from cache if network fails
+        console.warn("[wish] reconcile failed; showing cached (if any)", e);
       } finally {
         setLikedLoading(false);
       }
     };
     run();
-  }, [id, isMember]);
+  }, [id, isMember, currentUser?.id]);
 
-  /** Persist liked locally as a cache */
+  /** Keep namespaced cache in sync when liked changes while logged-in */
   useEffect(() => {
-    if (!gid) return;
-    localStorage.setItem(`gh:${gid}:liked`, liked ? "1" : "0");
-  }, [gid, liked]);
+    if (!id || !isMember) return;
+    const k = likeKey(id, whoKey(currentUser));
+    localStorage.setItem(k, liked ? "1" : "0");
+  }, [id, isMember, currentUser, liked]);
 
   /** Fetch reviews for this guesthouse */
   useEffect(() => {
@@ -342,7 +396,7 @@ export default function GuesthouseDetail() {
     []
   );
 
-  /** Like toggle */
+  /** Like toggle (optimistic) */
   const toggleLike = async () => {
     if (!data || likeBusy) return;
 
@@ -358,13 +412,15 @@ export default function GuesthouseDetail() {
     setLiked(next); // optimistic
     setLikeBusy(true);
 
+    const k = likeKey(guesthouseId, whoKey(currentUser));
+
     try {
       if (next) {
         await addWish(guesthouseId);
       } else {
         await removeWish(guesthouseId);
       }
-      localStorage.setItem(`gh:${guesthouseId}:liked`, next ? "1" : "0");
+      localStorage.setItem(k, next ? "1" : "0");
     } catch (e: any) {
       const status = e?.response?.status;
 
@@ -372,11 +428,11 @@ export default function GuesthouseDetail() {
       if (next && status === 409) {
         // already exists on server → keep liked
         setLiked(true);
-        localStorage.setItem(`gh:${guesthouseId}:liked`, "1");
+        localStorage.setItem(k, "1");
       } else if (!next && status === 404) {
         // already removed → keep unliked
         setLiked(false);
-        localStorage.setItem(`gh:${guesthouseId}:liked`, "0");
+        localStorage.setItem(k, "0");
       } else if (status === 401) {
         setLiked(!next);
         alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
@@ -389,10 +445,9 @@ export default function GuesthouseDetail() {
     }
   };
 
-
   const navigate = useNavigate();
-  
-  /** Reservation submit (now respects URL/session dates; only auto-fills if missing) */
+
+  /** Reservation submit (unchanged except for context) */
   const submitReservation = async () => {
     if (!id) return;
     setReserveMsg(null);
@@ -437,13 +492,17 @@ export default function GuesthouseDetail() {
       );
       setShowReserve(false);
       setReserveForm({ checkIn: "", checkOut: "", guests: 1 });
-      alert(data?.name + " 예약이 확정되었어요 🏡\n\n체크인 날짜: " + checkIn + "\n체크아웃 날짜: " + checkOut);
+      alert(
+        data?.name +
+          " 예약이 확정되었어요 🏡\n\n체크인 날짜: " +
+          checkIn +
+          "\n체크아웃 날짜: " +
+          checkOut
+      );
 
       sessionStorage.setItem("mypageTab", "booking");
       navigate("/mypage", { replace: true });
-
-    } 
-    catch (e: any) {
+    } catch (e: any) {
       const status = e?.response?.status;
       const body = e?.response?.data;
 
