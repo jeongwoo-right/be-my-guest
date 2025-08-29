@@ -115,10 +115,10 @@ const MyInfoTab: React.FC = () => {
               value={gender}
               onChange={(e) => setGender(e.target.value as Gender)}
             >
-              <option value="M">M</option>
-              <option value="F">F</option>
-              <option value="N">N</option>
-            </select>
+              <option value="N">선택 안 함</option>
+              <option value="M">남성</option>
+              <option value="F">여성</option>
+            </select> 
           </div>
 
           <div className="form-actions">
