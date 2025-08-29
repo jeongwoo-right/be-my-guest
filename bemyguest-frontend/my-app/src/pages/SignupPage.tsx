@@ -37,7 +37,7 @@ const SignupPage: React.FC = () => {
       setError("");
       await axios.post("http://localhost:8080/api/user/signup", form);
       alert("회원가입 성공!");
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       setError("회원가입 실패! 입력 내용을 확인해주세요.");
       console.error(err);
