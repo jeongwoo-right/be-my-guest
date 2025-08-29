@@ -23,9 +23,8 @@ const GuesthouseListPage: React.FC = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ✅ 쿼리값은 렌더 스코프에서 파싱 (JSX에서도 사용 가능)
+  // URL 파라미터 파싱
   const region = searchParams.get("region") || "";
-
   const startDateParam =
     searchParams.get("startDate") || searchParams.get("start") || "";
   const endDateParam =
@@ -38,15 +37,17 @@ const GuesthouseListPage: React.FC = () => {
     return Number.isFinite(g) && g >= 1 ? g : 1;
   })();
 
+  // 데이터 로드 + URL -> state 단방향 동기화 (정렬은 URL을 기준으로)
   useEffect(() => {
-    // URL에서 sort/dir 싱크
     const sortParam =
-      (searchParams.get("sort") as "rating" | "price" | "name") || sort;
-    const dirParam = (searchParams.get("dir") as "asc" | "desc") || dir;
-    if (sortParam && sortParam !== sort) setSort(sortParam);
-    if (dirParam && dirParam !== dir) setDir(dirParam);
+      (searchParams.get("sort") as "rating" | "price" | "name") || "rating";
+    const dirParam = (searchParams.get("dir") as "asc" | "desc") || "desc";
 
-    const loadGuesthouses = async () => {
+    // 로컬 state는 URL과 다를 때만 갱신 (불필요 렌더 방지)
+    if (sort !== sortParam) setSort(sortParam);
+    if (dir !== dirParam) setDir(dirParam);
+
+    const load = async () => {
       setIsLoading(true);
 
       const req: any = {
@@ -54,27 +55,52 @@ const GuesthouseListPage: React.FC = () => {
         endDate: endDateParam,
         guests: guestsParam,
         page: currentPage - 1,
-        size: 10,
+        size: 9,
         sort: sortParam,
         dir: dirParam,
       };
-      if (region) req.region = region;
+      if (region) req.region = region; // region 없으면 전체 검색
 
-      const response = await searchGuesthouses(req as GuesthouseSearchRequest);
-      setGuesthouses(response.content);
-      setTotalPages(response.totalPages);
+      const res = await searchGuesthouses(req as GuesthouseSearchRequest);
+      setGuesthouses(res.content);
+      setTotalPages(res.totalPages);
       setIsLoading(false);
     };
 
-    loadGuesthouses();
+    load();
   }, [
+    // URL이 바뀌거나 페이지가 바뀔 때만 재조회 (로컬 sort/dir은 URL로부터 동기화됨)
     searchParams,
+    currentPage,
     region,
     startDateParam,
     endDateParam,
     guestsParam,
-    currentPage,
   ]);
+
+  // 정렬 변경 핸들러: onChange에서 URL을 직접 업데이트(이펙트로 또 안 만짐)
+  const handleSortChange = (nextSort: "rating" | "price" | "name") => {
+    if (sort === nextSort) return; // 동일값이면 스킵
+    setSort(nextSort);
+
+    const next = new URLSearchParams(searchParams.toString());
+    if (next.get("sort") !== nextSort) next.set("sort", nextSort);
+    // URL이 실제로 바뀌는 경우에만 set
+    setSearchParams(next);
+    setCurrentPage(1);
+    window.scrollTo(0, 0);
+  };
+
+  const handleDirChange = (nextDir: "asc" | "desc") => {
+    if (dir === nextDir) return;
+    setDir(nextDir);
+
+    const next = new URLSearchParams(searchParams.toString());
+    if (next.get("dir") !== nextDir) next.set("dir", nextDir);
+    setSearchParams(next);
+    setCurrentPage(1);
+    window.scrollTo(0, 0);
+  };
 
   const handleSearch = (criteria: {
     region: string;
@@ -82,6 +108,7 @@ const GuesthouseListPage: React.FC = () => {
     endDate: string;
     guests: string;
   }) => {
+    // 최근검색 (서비스에서 최대 6개 유지)
     pushRecent({
       region: criteria.region,
       checkin: criteria.startDate,
@@ -89,15 +116,21 @@ const GuesthouseListPage: React.FC = () => {
       guests: Number(criteria.guests),
     });
 
+    // region 비어있으면 파라미터 제외 → 전체 지역
     const params = new URLSearchParams({
       startDate: criteria.startDate,
       endDate: criteria.endDate,
       guests: String(criteria.guests),
     });
-    if (criteria.region) params.set("region", criteria.region); // ✅ 빈 값이면 미포함
+    if (criteria.region) params.set("region", criteria.region);
+
+    // 정렬 파라미터는 유지
+    if (searchParams.get("sort")) params.set("sort", searchParams.get("sort")!);
+    if (searchParams.get("dir")) params.set("dir", searchParams.get("dir")!);
 
     setSearchParams(params);
 
+    // 상세 페이지 fallback
     sessionStorage.setItem(
       "search:last",
       JSON.stringify({
@@ -108,6 +141,7 @@ const GuesthouseListPage: React.FC = () => {
     );
 
     setCurrentPage(1);
+    window.scrollTo(0, 0);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -134,7 +168,7 @@ const GuesthouseListPage: React.FC = () => {
       <div className="mt-6 mb-3 flex items-center gap-2 justify-end text-sm">
         <select
           value={sort}
-          onChange={(e) => setSort(e.target.value as any)}
+          onChange={(e) => handleSortChange(e.target.value as any)}
           className="h-9 rounded-lg border border-slate-300 px-2"
         >
           <option value="rating">평점순</option>
@@ -143,7 +177,7 @@ const GuesthouseListPage: React.FC = () => {
         </select>
         <select
           value={dir}
-          onChange={(e) => setDir(e.target.value as any)}
+          onChange={(e) => handleDirChange(e.target.value as any)}
           className="h-9 rounded-lg border border-slate-300 px-2"
         >
           <option value="desc">내림차순</option>
