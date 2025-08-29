@@ -41,8 +41,8 @@ const GuesthouseListPage: React.FC = () => {
   useEffect(() => {
     // URL에서 sort/dir 싱크
     const sortParam =
-      (searchParams.get("sort") as "rating" | "price" | "name") || undefined;
-    const dirParam = (searchParams.get("dir") as "asc" | "desc") || undefined;
+      (searchParams.get("sort") as "rating" | "price" | "name") || "rating";
+    const dirParam = (searchParams.get("dir") as "asc" | "desc") || "desc";
     if (sortParam && sortParam !== sort) setSort(sortParam);
     if (dirParam && dirParam !== dir) setDir(dirParam);
 
@@ -57,9 +57,9 @@ const GuesthouseListPage: React.FC = () => {
         endDate: endDateParam,
         guests: guestsParam,
         page: currentPage - 1,
-        size: 10,
-        sort,
-        dir,
+        size: 9,
+        sort: sortParam,
+        dir: dirParam ,
       };
 
       const response = await searchGuesthouses(searchRequest);
