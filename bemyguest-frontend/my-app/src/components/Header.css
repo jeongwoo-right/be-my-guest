@@ -9,11 +9,24 @@
 }
 
 .logo {
+  display: flex;
+  align-items: center;
   font-size: 24px;
   font-weight: 800;
   color: var(--color-brand-600);
   cursor: pointer;
   transition: filter 0.2s ease;
+}
+
+.logo-img {
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 800;
 }
 
 .logo:hover {
