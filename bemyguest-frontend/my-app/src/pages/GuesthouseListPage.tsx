@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { pushRecent } from "@/services/recentSearch";
 
 import { searchGuesthouses } from "../services/guesthouseService";
 import type {
@@ -94,6 +95,13 @@ const GuesthouseListPage: React.FC = () => {
     endDate: string;
     guests: string; // number 타입으로 받는 것이 좋습니다. SearchBar에서 변환 필요
   }) => {
+    pushRecent({
+      region: criteria.region,
+      checkin: criteria.startDate,
+      checkout: criteria.endDate,
+      guests: Number(criteria.guests),
+    });
+
     setSearchParams({
       region: criteria.region,
       startDate: criteria.startDate,

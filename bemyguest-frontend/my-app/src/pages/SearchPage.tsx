@@ -72,7 +72,7 @@ export default function SearchPage() {
           {/* SearchBar가 initialValues를 받도록만 약간 수정해줘 */}
           <SearchBar
             onSearch={handleSearch}
-            initialValues={
+            initial={
               preset
                 ? {
                     region: preset.region,
