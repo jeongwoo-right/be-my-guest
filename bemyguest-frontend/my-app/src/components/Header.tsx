@@ -55,7 +55,8 @@ const Header: React.FC = () => {
         if (res.status === 401) {
           if (!shown401Ref.current) {
             shown401Ref.current = true;
-            alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+            // 토큰이 이미 사라져있으면
+            if (!!token) alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
           }
           // 만료 처리: localStorage + state 동시 갱신
           localStorage.removeItem("token");
