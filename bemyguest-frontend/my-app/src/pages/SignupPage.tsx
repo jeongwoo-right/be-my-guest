@@ -24,7 +24,9 @@ const SignupPage: React.FC = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -113,7 +115,7 @@ const SignupPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="gender">성별</label>
+            <label htmlFor="gender">성별(선택)</label>
             <select
               id="gender"
               className="form-select"
@@ -130,9 +132,6 @@ const SignupPage: React.FC = () => {
           <div className="form-actions">
             <button type="submit" className="primary-button">
               회원가입
-            </button>
-            <button type="button" className="secondary-button" onClick={goToLogin}>
-              로그인
             </button>
           </div>
 
