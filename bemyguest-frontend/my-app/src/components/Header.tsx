@@ -97,7 +97,12 @@ const Header: React.FC = () => {
     <header className="header-container">
       {/* 로고 */}
       <div className="logo" onClick={goToMainPage}>
-        BeMyGuest
+        <img 
+        src="/logo.png"   // public 폴더에 logo.png 넣은 경우 경로는 이렇게 작성
+        alt="로고" 
+        className="logo-img"
+      />
+      <span className="logo-text">BeMyGuest</span>
       </div>
 
       {/* 로그인 여부에 따라, 로그인/로그아웃 버튼 */}
